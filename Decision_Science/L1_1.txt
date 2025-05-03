@@ -1,0 +1,11 @@
+# Intro
+Decision science - making informed (data driven) decisions
+
+Descriptive analytics - visualize and sumarize
+Prescriptive analytics - recommends best action
+
+Frameworks:
+- Decision tree
+- Game theory
+- Expected value E(x)
+- A/B testing
