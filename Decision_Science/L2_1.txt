@@ -1,0 +1,50 @@
+# defining success
+
+- be customer focused
+
+Measures of success:
+- performance
+- time (delivery on schedule)
+- cost
+- quality
+- stakeholder satisfaction
+- business impact
+
+MVP - simplest functional version of your solution that delivers value
+
+# Databases and quality checks
+
+Triaging data - availability, cost, utility, relevancy, frequency of updates, granularity
+Checks areas:
+- missing values
+- patterns of issues
+- range checks 
+- outlier review
+- timeliness of data
+- consistency of format
+
+# Model prioritisation - 
+1. Simple linear regression (baseline)
+2. Logistic regression (suitable baseline for binary)
+3. Common transofrmations (Log and square root, standardization, polynomial)
+
+# Tracking performance - 
+Model metrics:
+    - accuracy (percentage got right)
+    - precision 
+    - recall (catch true positive)
+    - F1 score
+    - area under the curve
+    - mean absolute error
+
+Dashboards - transform complex analysis into clear, actionable insights
+
+Principles for good dashboards: 
+    - know your audience
+    - key metrics
+    - clear visualisation
+    - track change over time
+    - add context
+    - test and iterate
+
+# 

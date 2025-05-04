@@ -9,3 +9,12 @@ Frameworks:
 - Game theory
 - Expected value E(x)
 - A/B testing
+
+Step 1 - frame the problem 
+    Techniques:
+    - 5 whys
+    - Fishbone
+    - SMART goals
+
+Step 2 - conext (business objective, constraints and stakeholders)
+

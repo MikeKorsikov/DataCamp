@@ -1,0 +1,48 @@
+# decision science in business
+
+Steps:
+1. Define problem
+2. Identify key stakeholders
+3. Assess available data
+4. Establish success metrics
+5. Allocate resources 
+6. Set a realistic timeline
+
+# Communicate insights
+
+- uncover patterns
+- share clearly
+
+Data storytelling - frame insights as stories
+- don't complicate (line, bar, scatter)
+- tailor your message
+- highlight implications
+- focus on "so what"
+
+# Data driven culture
+
+Steps:
+1. Learn vocabulary
+2. Identify meaningful business problems
+3. Ask good questions
+4. Challenge assumptions
+5. Embrace test and learn mindset
+
+
+a) Master the language
+b) Prioritise problems
+c)  Ask powerful questions
+d) Test assumptions
+d) Focus on iteration 
+
+# Looking ahead
+
+- understand emerging trends
+
+Forces:
+- AI (automation, prediction, personalisation) <- explaiable by main factors
+- Big data analytics (real-time, agility)
+- Human in the loop (add context and ethical judgement)
+- integration of behavioral economics (understanding biases, loss aversion)
+
+# 
