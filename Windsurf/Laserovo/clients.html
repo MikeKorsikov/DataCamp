@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clients - Laserovo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main style="max-width:1000px;margin:40px auto;padding:20px;">
+        <h1>Client Management</h1>
+        <p>Placeholder page for managing clients. Build functionality here.</p>
+        <div class="actions">
+            <button id="add-new">Add New</button>
+            <button id="modify">Modify</button>
+            <button id="show-all">Show All</button>
+        </div>
+        <button onclick="location.href='index.html'">Back to Home</button>
+    </main>
+    <div class="modal-overlay" id="client-modal-overlay" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="client-modal-title">
+            <div class="modal-header">
+                <h2 id="client-modal-title">Add New Client</h2>
+            </div>
+            <form id="client-form" class="modal-body">
+                <div class="form-grid">
+                    <label>
+                        <span>Name</span>
+                        <input type="text" id="client-name" name="name" required>
+                    </label>
+                    <label>
+                        <span>Surname</span>
+                        <input type="text" id="client-surname" name="surname" required>
+                    </label>
+                    <label>
+                        <span>Phone</span>
+                        <input type="tel" id="client-phone" name="phone">
+                    </label>
+                    <label>
+                        <span>Email</span>
+                        <input type="email" id="client-email" name="email">
+                    </label>
+                    <label>
+                        <span>Facebook</span>
+                        <input type="text" id="client-facebook" name="facebook">
+                    </label>
+                    <label>
+                        <span>Instagram</span>
+                        <input type="text" id="client-instagram" name="instagram">
+                    </label>
+                    <label>
+                        <span>Booksy</span>
+                        <input type="text" id="client-booksy" name="booksy">
+                    </label>
+                    <label>
+                        <span>DOB</span>
+                        <input type="date" id="client-dob" name="dob">
+                    </label>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" id="client-save">Save</button>
+                    <button type="button" id="client-cancel" class="secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="modal-overlay" id="search-modal-overlay" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="search-modal-title">
+            <div class="modal-header">
+                <h2 id="search-modal-title">Search Client to Modify</h2>
+            </div>
+            <div class="modal-body">
+                <form id="search-form">
+                    <div class="search-controls">
+                        <label>
+                            <span>Search by:</span>
+                            <select id="search-field">
+                                <option value="name">Name</option>
+                                <option value="surname">Surname</option>
+                                <option value="phone">Phone</option>
+                                <option value="email">Email</option>
+                                <option value="facebook">Facebook</option>
+                                <option value="instagram">Instagram</option>
+                                <option value="booksy">Booksy</option>
+                            </select>
+                        </label>
+                        <label>
+                            <span>Search term:</span>
+                            <input type="text" id="search-term" placeholder="Enter search term..." required>
+                        </label>
+                        <button type="submit">Search</button>
+                    </div>
+                </form>
+                <div id="search-results" class="search-results" hidden>
+                    <h3>Search Results</h3>
+                    <div id="results-list"></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="search-cancel" class="secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="edit-modal-overlay" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
+            <div class="modal-header">
+                <h2 id="edit-modal-title">Edit Client</h2>
+            </div>
+            <form id="edit-form" class="modal-body">
+                <div class="form-grid">
+                    <label>
+                        <span>Name</span>
+                        <input type="text" id="edit-name" name="name" required>
+                    </label>
+                    <label>
+                        <span>Surname</span>
+                        <input type="text" id="edit-surname" name="surname" required>
+                    </label>
+                    <label>
+                        <span>Phone</span>
+                        <input type="tel" id="edit-phone" name="phone">
+                    </label>
+                    <label>
+                        <span>Email</span>
+                        <input type="email" id="edit-email" name="email">
+                    </label>
+                    <label>
+                        <span>Facebook</span>
+                        <input type="text" id="edit-facebook" name="facebook">
+                    </label>
+                    <label>
+                        <span>Instagram</span>
+                        <input type="text" id="edit-instagram" name="instagram">
+                    </label>
+                    <label>
+                        <span>Booksy</span>
+                        <input type="text" id="edit-booksy" name="booksy">
+                    </label>
+                    <label>
+                        <span>DOB</span>
+                        <input type="date" id="edit-dob" name="dob">
+                    </label>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" id="edit-save">Save</button>
+                    <button type="button" id="edit-cancel" class="secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="modal-overlay" id="show-all-modal-overlay" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="show-all-modal-title">
+            <div class="modal-header">
+                <h2 id="show-all-modal-title">All Clients</h2>
+            </div>
+            <div class="modal-body">
+                <div id="show-all-results" class="search-results">
+                    <div id="show-all-list"></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="show-all-cancel" class="secondary">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+    
+</body>
+</html>
+
