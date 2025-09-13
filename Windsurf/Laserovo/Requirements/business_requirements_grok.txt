@@ -1,0 +1,993 @@
+# from grok
+
+Revised Software Application Requirements and Project Structure for Laser Hair Removal Business (Poland)
+
+Overview
+
+The revised requirements streamline the original specifications for a solo-operated laser hair removal business in Poland, prioritizing simplicity for a single user while maintaining core functionality for client management, appointment scheduling, finance, marketing, communication, and hardware tracking. The application will be developed in three phases (Desktop, Web, iOS) with a focus on ease of use, cost-effectiveness, and compliance with GDPR and Polish tax regulations. Below are the revised requirements and a proposed project structure for Phase 1 (Desktop), with scalability for future phases.
+
+
+
+Revised Phased Product Development Roadmap
+
+The application will be developed in three phases, each building on the previous one, tailored for a solo operator:
+
+
+
+
+
+Phase 1: Desktop Application (Core Functionality, Local Control)
+A macOS desktop application with essential features for daily operations, using local storage (SQLite) and minimalistic UI. Includes basic automation (e.g., reminders, visit spacing logic) and manual communication (SMS/email).
+
+
+
+Phase 2: Web Application (Remote Access)
+A web-based application for remote access, migrating data to a cloud database (PostgreSQL on Azure) and adding social media integration and advanced reporting.
+
+
+
+Phase 3: iOS Application (Mobile Access, Enhanced AI)
+A native iOS app for on-the-go management, with push notifications and enhanced AI chatbot functionality for owner assistance.
+
+
+
+I. Revised Functional Requirements
+
+1. Client Management
+
+
+
+
+
+Client Database:
+
+
+
+
+
+Add, modify, and deactivate clients. Deactivated clients’ history is retained.
+
+
+
+Store: full_name (text), phone_number (text), email (text), dob (date), is_blacklisted (boolean, default False), is_active (boolean, default True), notes (text, optional for special instructions).
+
+
+
+Search clients by name.
+
+
+
+Quick view of client’s treatment history and progress per treatment area.
+
+
+
+Digital Checklist:
+
+
+
+
+
+One-off per client, completed during first visit. Store up to 10 customizable questions (e.g., allergies, medical history) in a JSON field.
+
+
+
+Data Migration (Phase 1 Priority):
+
+
+
+
+
+Import client data from CSV with mandatory fields: full_name, phone_number, email, dob. Optional: notes, treatment history (area_name, visit_number, date, power, amount). Validate data during import (e.g., valid email, date format).
+
+2. Appointment Management
+
+
+
+
+
+Manual Booking/Management (Owner Only):
+
+
+
+
+
+Add, modify, reschedule, cancel appointments.
+
+
+
+Calendar view (daily, weekly, monthly) for appointments.
+
+
+
+Automated Appointment Reminders:
+
+
+
+
+
+Send reminders via SMS/email 24 hours and 1 hour before appointments.
+
+
+
+Allow owner to disable reminders per client.
+
+
+
+Automated Post-Care & Follow-Up Messages:
+
+
+
+
+
+Send post-treatment message 1 day after appointment (check for adverse reactions).
+
+
+
+Send follow-up message 1-2 weeks after treatment (validate procedure effect).
+
+
+
+Visit Spacing Logic (Critical):
+
+
+
+
+
+Enforce minimum waiting periods for same treatment area:
+
+
+
+
+
+Session 2: 4 weeks after Session 1.
+
+
+
+Session 3: 6 weeks after Session 2.
+
+
+
+Session 4: 8 weeks after Session 3.
+
+
+
+Session 5: 10 weeks after Session 4.
+
+
+
+Session 6: 12 weeks after Session 5.
+
+
+
+Session 7: 14 weeks after Session 6.
+
+
+
+Session 8: 16 weeks after Session 7.
+
+
+
+Session 9: 18 weeks after Session 8.
+
+
+
+Session 10: 20 weeks after Session 9.
+
+
+
+Display warning if minimum time not elapsed.
+
+
+
+Operating Hours Management:
+
+
+
+
+
+Default: Monday-Friday 10:00-19:00, Saturday 10:00-14:00, Sunday closed.
+
+
+
+Allow owner to update start/end times per day or mark specific dates as closed (e.g., holidays).
+
+
+
+Validate no existing appointments conflict with changes.
+
+3. Finance Management
+
+
+
+
+
+Sales Recording:
+
+
+
+
+
+Record for each appointment: service, price, payment method (Cash, Card, Phone (NFC), Blik, Bank Transfer).
+
+
+
+Expense Tracking:
+
+
+
+
+
+Record expenses under categories (e.g., Rent, Marketing, Supplies).
+
+
+
+Allow custom categories and mark as tax_deductible (boolean).
+
+
+
+No outstanding payment or invoicing tracking.
+
+4. Marketing & Communication
+
+
+
+
+
+Manual Messaging (Phase 1):
+
+
+
+
+
+Send SMS/email to individual clients or groups using templates (e.g., reminders, promotions).
+
+
+
+Automated Messaging (Phase 2):
+
+
+
+
+
+Send birthday, anniversary (first visit), and Poland state holiday messages.
+
+
+
+Manage promotions: loyalty discounts (e.g., 50% on 10th visit), referral discounts, bulk purchase offers.
+
+
+
+Define discount rates (percentage/fixed) and promotional periods.
+
+
+
+Target specific client groups (e.g., new clients, students).
+
+
+
+Communication Hub (Phase 2):
+
+
+
+
+
+Consolidate SMS, email, Instagram, and Facebook Messenger for outbound and inbound messages.
+
+5. Product/Service Management
+
+
+
+
+
+Services: Define services (e.g., Laser Hair Removal) with name, price, and duration.
+
+
+
+Inventory:
+
+
+
+
+
+Track consumables (e.g., gels, disposables) with item_name, current_quantity, unit (e.g., ml, pcs), low_stock_threshold (default 10).
+
+
+
+Manual quantity updates via UI form.
+
+
+
+Low-stock alerts via popup (Phase 1), email/SMS (Phase 2).
+
+6. Hardware Management
+
+
+
+
+
+Equipment Tracking:
+
+
+
+
+
+Single laser machine with: equipment_name, purchase_date, last_maintenance_date, next_maintenance_due_date, last_insurance_date, next_insurance_due_date, maximum_impulses_on_purchase, total_impulses_recorded.
+
+
+
+Manual entry for impulse counts with validation (total_impulses <= maximum_impulses).
+
+
+
+Automated Reminders:
+
+
+
+
+
+Popup notifications for maintenance (1 month, 2 weeks before due), insurance (1 month, 2 weeks before due), accountant visits, regular expenses (e.g., rent), and inventory checks.
+
+7. Reporting Functionality (Phase 1 Simplified)
+
+
+
+
+
+Financial Reports:
+
+
+
+
+
+Monthly revenue, expenses, profit/loss (tables, bar charts).
+
+
+
+Export reports to CSV.
+
+
+
+Customer Reports:
+
+
+
+
+
+Client treatment progress (visit number per area).
+
+
+
+New clients and churn.
+
+
+
+Equipment Reports:
+
+
+
+
+
+Utilization (% of impulses used).
+
+
+
+Zone Reports:
+
+
+
+
+
+Popularity by session count.
+
+
+
+Deferred to Phase 2: Waterfall charts, revenue/profit forecasts, detailed tax calculations.
+
+
+
+II. Revised Non-Functional Requirements
+
+
+
+
+
+Usability:
+
+
+
+
+
+Intuitive, minimalistic UI in English.
+
+
+
+Cross-platform: macOS (Phase 1), web browsers (Phase 2), iOS (Phase 3).
+
+
+
+Performance:
+
+
+
+
+
+Fast loading and responsive UI.
+
+
+
+Handle up to 1,000 clients and 10,000 appointments efficiently (suitable for solo operator).
+
+
+
+Security (Phase 1 Simplified, Phase 2 Full):
+
+
+
+
+
+Phase 1: Local data encryption (SQLite with SQLCipher), strong password hashing (bcrypt).
+
+
+
+Phase 2: GDPR compliance, SSL/TLS, role-based access (single admin user).
+
+
+
+Reliability:
+
+
+
+
+
+High uptime with local backups (Phase 1). Cloud backups (Phase 2).
+
+
+
+Graceful error handling with user-friendly messages.
+
+
+
+Integrations (Phase 1 Simplified):
+
+
+
+
+
+Calendar: Google/Apple Calendar sync.
+
+
+
+Communication: Twilio (SMS), SMTP (email).
+
+
+
+Deferred to Phase 2: Instagram, Facebook, Booksy (if API available).
+
+
+
+Chatbot: Rule-based (Phase 1), AI-enhanced (Phase 3).
+
+
+
+Technical Requirements:
+
+
+
+
+
+Backend: Python, SQLite (Phase 1), PostgreSQL (Phase 2).
+
+
+
+Frontend: PyQt (Phase 1), Flask/Bootstrap (Phase 2), SwiftUI (Phase 3).
+
+
+
+Hosting: Local (Phase 1), Azure (Phase 2).
+
+
+
+III. Revised Database Design Principles
+
+
+
+
+
+Normalization: 3NF with atomic values, no redundancy (e.g., client names not stored in appointments).
+
+
+
+Keys: Auto-incrementing integer primary keys, defined foreign keys with ON DELETE/UPDATE CASCADE.
+
+
+
+Constraints: NOT NULL for essential fields, CHECK for valid ranges (e.g., positive amounts).
+
+
+
+Indexing: On primary/foreign keys and frequently queried columns (e.g., client name).
+
+
+
+Database: SQLite (Phase 1), PostgreSQL (Phase 2).
+
+
+
+IV. Revised Database Tables
+
+
+
+
+
+clients
+
+
+
+
+
+client_id (PK, int)
+
+
+
+full_name (text, NOT NULL)
+
+
+
+phone_number (text, NOT NULL)
+
+
+
+email (text)
+
+
+
+dob (date)
+
+
+
+is_blacklisted (boolean, default False)
+
+
+
+is_active (boolean, default True)
+
+
+
+notes (text)
+
+
+
+appointments
+
+
+
+
+
+appointment_id (PK, int)
+
+
+
+client_id (FK to clients, int)
+
+
+
+service_id (FK to services, int)
+
+
+
+area_id (FK to treatment_areas, int)
+
+
+
+appointment_date (datetime, NOT NULL)
+
+
+
+session_number_for_area (int, NOT NULL)
+
+
+
+power (decimal)
+
+
+
+appointment_status (text, e.g., 'Scheduled', 'Completed', 'Cancelled')
+
+
+
+amount (decimal)
+
+
+
+payment_method_id (FK to payment_methods, int)
+
+
+
+next_suggested_appointment_date (datetime)
+
+
+
+services
+
+
+
+
+
+service_id (PK, int)
+
+
+
+service_name (text, NOT NULL)
+
+
+
+description (text)
+
+
+
+price (decimal, NOT NULL)
+
+
+
+duration_minutes (int, NOT NULL)
+
+
+
+is_active (boolean, default True)
+
+
+
+expenses
+
+
+
+
+
+expense_id (PK, int)
+
+
+
+expense_date (date, NOT NULL)
+
+
+
+amount (decimal, NOT NULL)
+
+
+
+description (text)
+
+
+
+category_id (FK to expense_categories, int)
+
+
+
+expense_categories
+
+
+
+
+
+category_id (PK, int)
+
+
+
+category_name (text, NOT NULL)
+
+
+
+is_tax_deductible (boolean, default False)
+
+
+
+promotions (Phase 2)
+
+
+
+
+
+promotion_id (PK, int)
+
+
+
+promotion_name (text, NOT NULL)
+
+
+
+promotion_type (text, e.g., 'Loyalty', 'Referral')
+
+
+
+discount_value (decimal)
+
+
+
+start_date (date)
+
+
+
+end_date (date)
+
+
+
+is_active (boolean, default True)
+
+
+
+target_categories (text)
+
+
+
+operating_hours
+
+
+
+
+
+day_of_week_id (PK, int)
+
+
+
+day_of_week (text, NOT NULL)
+
+
+
+start_time (time)
+
+
+
+end_time (time)
+
+
+
+is_closed (boolean, default False)
+
+
+
+inventory
+
+
+
+
+
+item_id (PK, int)
+
+
+
+item_name (text, NOT NULL)
+
+
+
+current_quantity (decimal, NOT NULL)
+
+
+
+unit (text, NOT NULL)
+
+
+
+low_stock_threshold (decimal, default 10)
+
+
+
+users (Single admin user)
+
+
+
+
+
+user_id (PK, int)
+
+
+
+username (text, NOT NULL)
+
+
+
+password_hash (text, NOT NULL)
+
+
+
+treatment_areas
+
+
+
+
+
+area_id (PK, int)
+
+
+
+area_name (text, NOT NULL)
+
+
+
+default_price (decimal)
+
+
+
+estimated_duration_minutes (int)
+
+
+
+payment_methods
+
+
+
+
+
+payment_method_id (PK, int)
+
+
+
+method_name (text, NOT NULL)
+
+
+
+hardware
+
+
+
+
+
+hardware_id (PK, int)
+
+
+
+equipment_name (text, NOT NULL)
+
+
+
+purchase_date (date)
+
+
+
+last_maintenance_date (date)
+
+
+
+next_maintenance_due_date (date)
+
+
+
+last_insurance_date (date)
+
+
+
+next_insurance_due_date (date)
+
+
+
+maximum_impulses_on_purchase (int)
+
+
+
+total_impulses_recorded (int)
+
+
+
+digital_checklists
+
+
+
+
+
+checklist_id (PK, int)
+
+
+
+client_id (FK to clients, int)
+
+
+
+checklist_date (date, NOT NULL)
+
+
+
+questions (JSON, e.g., {"q1": "Allergies?", "a1": "None", ...})
+
+
+
+is_completed (boolean, default False)
+
+
+
+owner_reminders
+
+
+
+
+
+reminder_id (PK, int)
+
+
+
+reminder_type (text, e.g., 'Maintenance', 'Insurance', 'Expense')
+
+
+
+related_id (int, nullable, FK to hardware/expenses/inventory)
+
+
+
+due_date (date, NOT NULL)
+
+
+
+reminder_date (date, NOT NULL)
+
+
+
+message (text, NOT NULL)
+
+
+
+is_active (boolean, default True)
+
+
+
+delivery_method (text, e.g., 'Popup', 'SMS', 'Email')
+
+laser_hair_removal_app/
+├── src/
+│   ├── __init__.py
+│   ├── main.py
+│   ├── backend/
+│   │   ├── __init__.py
+│   │   ├── client_manager.py
+│   │   ├── appointment_manager.py
+│   │   ├── finance_manager.py
+│   │   ├── inventory_manager.py
+│   │   ├── hardware_manager.py
+│   │   ├── reminder_manager.py
+│   │   └── reporting.py
+│   ├── database/
+│   │   ├── __init__.py
+│   │   ├── db_setup.py
+│   │   ├── db_operations.py
+│   │   └── migrations/
+│   │       └── init_schema.sql
+│   ├── ui/
+│   │   ├── __init__.py
+│   │   ├── main_window.py
+│   │   ├── client_view.py
+│   │   ├── appointment_view.py
+│   │   ├── finance_view.py
+│   │   ├── inventory_view.py
+│   │   ├── hardware_view.py
+│   │   └── report_view.py
+│   ├── utils/
+│   │   ├── __init__.py
+│   │   ├── config.py
+│   │   ├── logger.py
+│   │   ├── csv_importer.py
+│   │   ├── email_sender.py
+│   │   ├── sms_sender.py
+│   │   └── calendar_sync.py
+│   └── models/
+│       ├── __init__.py
+│       ├── client.py
+│       ├── appointment.py
+│       ├── service.py
+│       ├── expense.py
+│       ├── inventory.py
+│       ├── hardware.py
+│       ├── reminder.py
+│       └── treatment_area.py
+├── data/
+│   ├── database.db
+│   └── imports/
+│       └── clients.csv
+├── config/
+│   ├── app_config.yaml
+│   └── secrets.yaml
+├── tests/
+│   ├── __init__.py
+│   ├── test_client_manager.py
+│   ├── test_appointment_manager.py
+│   ├── test_finance_manager.py
+│   └── test_db_operations.py
+├── requirements.txt
+├── README.md
+└── setup.py

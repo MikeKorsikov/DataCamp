@@ -1,0 +1,530 @@
+# from Gemini
+Software Application Requirements for Laser Hair Removal Business (Poland)
+Context:
+Context:
+I operate a small, solo laser hair removal business in Poland. My client base is growing, and I need a software application to automate and organize various aspects of my business, including appointments, finance, marketing, and client communication. My current tools are manual (Excel, Apple Calendar, Instagram, Facebook Messenger, SMS). This application will be exclusively for the business owner's use, with no direct client or vendor access. I am looking for assistance in generating the code/framework or providing a detailed architectural plan and pseudo-code.
+
+Objective:
+To create owner-centric software application that automates and streamlines client management, scheduling, finance, marketing, and communication, developed in phases for MacBook, Web, and iOS.
+
+Phased Product Development Roadmap
+The product will be developed according to the following roadmap:
+
+Phase 1: Desktop Application (Core Functionality & Local Control)
+This phase focuses on building the foundational features for daily operations, primarily for the owner's use on a MacBook. Data will be managed and accessible by this application. AI and Chatbot functionality should be integrated from this phase.
+
+Phase 2: Web Application (Enhanced Owner Accessibility)
+Building upon Phase 1, this phase makes the application accessible via a web browser solely for the owner, ensuring remote management capabilities.
+
+Phase 3: Mobile iOS Application (On-the-Go Owner Management & Advanced AI Features)
+This phase develops a native iOS application for the owner, providing optimized mobile access and enhancing the AI chatbot functionality for intuitive interaction.
+
+I. Functional Requirements
+1. Client Management
+Client Database:
+
+Add, Modify, and Deactivate Clients: Ability to manage client records. Deactivated clients' history must be retained.
+
+"Blacklist" Flag: Include a flag to mark clients as "blacklisted".
+
+Stored Client Details: Full Name, Phone, Email, DOB.
+
+Stored Client History (per treatment area): visit_id, client_id, visit_number, area, power, amount. (Note: name should be retrieved by joining client_id, not stored directly).
+
+Search: Allow search of clients by name.
+
+Quick Viewing: Enable quick viewing of a client's entire history and current treatment progress for specific zones.
+
+Digital Checklist (One-off per client):
+
+This list should be populated by the owner during the first visit as a one-off exercise for each client to identify any allergies, health issues, and other relevant medical history. The system must support the ability to add or modify checklist questions dynamically.
+
+Data Migration (Phase 1 Priority):
+
+Ability to import existing client data from CSV.
+
+2. Appointment Management
+Manual Booking/Management (Owner Only):
+
+Ability to add, modify, reschedule, and cancel appointments.
+
+Calendar View: Display a clear calendar view of appointments (daily, weekly, monthly).
+
+Automated Appointment Reminders:
+
+Send automated reminders to clients via SMS, email, Instagram message, and Facebook message at:
+
+24 hours before the scheduled appointment.
+
+1 hour before the scheduled appointment.
+
+Client Opt-out: Possibility for the owner to turn off reminders for individual clients if needed.
+
+Automated Post-Care & Follow-up Messages:
+
+Send a message to clients the day after their treatment to check for any adverse reactions.
+
+Send a message approximately one to two weeks after the treatment to validate the effect of the procedure. (These do not vary by treatment area).
+
+Visit Spacing Logic (Critical): The system MUST enforce minimum waiting periods between sequential hair removal sessions for the same treatment zone:
+
+Session 1: Initial session.
+
+Session 2: Minimum 4 weeks after Session 1.
+
+Session 3: Minimum 6 weeks after Session 2.
+
+Session 4: Minimum 8 weeks after Session 3.
+
+Session 5: Minimum 10 weeks after Session 4.
+
+Session 6: Minimum 12 weeks after Session 5.
+
+Session 7: Minimum 14 weeks after Session 6.
+
+Session 8: Minimum 16 weeks after Session 7.
+
+Session 9: Minimum 18 weeks after Session 8.
+
+Session 10: Minimum 20 weeks after Session 9.
+
+The system should give a warning message if the minimum time since the last session for that zone has not elapsed.
+
+Operating Hours Management:
+
+Standard Hours: Monday-Friday: 10:00-19:00, Saturday: 10:00-14:00, Sunday: Closed.
+
+Configurable Hours: Allow the owner to easily update the start and end times for each day of the week in the future.
+
+Closed Days Management: Allow marking specific days or ranges of dates as closed (e.g., holidays, personal breaks) to prevent bookings.
+
+3. Finance Management
+Sales Recording: Record sales for each appointment (service, price, payment_method).
+
+Expense Tracking:
+
+Record expenses under predefined categories (e.g., Premises Rent, Accountant, Social Security (ZUS), Marketing, Chocolates, Tissues, Coffee, Ultrasound Gel, Panthenol, Towels, Electricity, PIT Settlement, Gasoline, Hotel, Maintenance, travel, Booksy fee, Cleaning chemicals, Fuel, Printer ink, InPost).
+
+Customizable Categories: Allow adding new, custom expense categories.
+
+Tax Deductibility Flag: For each expense category, allow marking it as "tax deductible" or "non-tax deductible."
+
+Payment Methods Recording: Record transactions as paid via: Cash, Card, Phone (NFC), Blik, and Bank Transfer.
+
+No Payment Tracking for Outstanding Payments or Invoicing.
+
+4. Marketing & Communication (Owner-Driven Outbound)
+Automated Occasion-Based Messaging (Phase 2 Full Implementation):
+
+Send personalized birthday messages.
+
+Send personalized anniversary messages (from their first visit).
+
+Send messages during relevant Poland state holidays.
+
+Promotional Activity Management:
+
+Implement various discount types: Visit-Based Loyalty Discount (e.g. 50% on 10th visit), Referral Program Discount, Bulk Purchase Discount, "Buy X Sessions, Get Y Free" offers, General "Discounts for new clients."
+
+Flexible Discount Rate Configuration: Define and change specific discount rates (percentage or fixed amount).
+
+Configurable Promotional Periods: Define specific calendar periods (e.g., holidays, custom periods).
+
+Targeted Audience Categories: Specify client categories for promotions (e.g., students, seniors, new clients, clients who haven't visited in X months, specific treatment areas).
+
+Partnership Program Integration: Support creating and tracking promotions related to partnerships.
+
+Communication Hub (Phase 2 Full Implementation):
+
+Consolidate communication with clients (SMS, email, Instagram, and Facebook Messenger) into a single interface for owner-initiated outbound messages and management of inbound messages.
+
+Allow sending individual messages and bulk messages.
+
+Provide templates for common messages.
+
+5. Product/Service Management
+Define services offered, including pricing and estimated duration.
+
+Track inventory of consumables (e.g., gels, disposables) and alert when low.
+
+6. Hardware Management
+Equipment Tracking:
+
+Track hardware (laser equipment) maintenance: capture when maintenance was done and when it is due.
+
+Track hardware insurance (if it is insured): capture when insurance was done and when it is due.
+
+Track number of impulses: to enable analysis of hardware depreciation and utilization.
+
+There is only one laser so it has to be a single placeholder, with no need to add new equipment.
+
+Automated Owner Reminders:
+
+Set reminders (via popup window, SMS, and email, and chatbot) for:
+
+Hardware maintenance due (1 month and 2 weeks before due date).
+
+Hardware insurance due (1 month and 2 weeks before due date).
+
+To visit the accountant.
+
+To pay (regular) expenses (e.g. rent due).
+
+To check inventory.
+
+7. Reporting Functionality
+Financial Reports:
+
+Management Income Statement: Current Month and Year-to-Date (YTD).
+
+Statutory Income Statement: Current Month and YTD (adhering to Polish sole proprietorship tax rules).
+
+Tax Impact Calculation: Calculate (Taxable Income - Tax Deductible Expenses) × Configurable Tax Rate for the current month and YTD.
+
+Revenue reports (daily, weekly, monthly, annual).
+
+Expense reports.
+
+Profit/Loss statements.
+
+Revenue per Zone: Report from most to least profitable zones.
+
+Profit per Zone: Report from most to least profitable zones.
+
+Revenue per Month, Profit per Month.
+
+Revenue Waterfall Chart (or Bridge Report): Month over month to identify drivers (e.g., new customers, number of visits, service indexing).
+
+Profit Waterfall Chart (or Bridge Report): Month over month to identify drivers.
+
+Revenue and Profit Forecast: For the next month/current full year/next year (based on existing customer base, historical data, expected growth, indexing of services, expected churn).
+
+Customer Reports:
+
+Life Cycle of Patient: Report where each client is in their journey, considering their visit number versus a maximum of 10 visits per area (e.g., 3 visits means 30% into lifecycle). 70% of the treatment period is important for forecasting future revenues.
+
+Customer Churn and New Customer Report.
+
+Equipment Reports:
+
+Life Cycle of Equipment: Report % of utilization (derived from impulse count).
+
+Zone Popularity: Report zones from most to least popular by number of sessions.
+
+II. Non-Functional Requirements
+1. Usability
+Intuitive User Interface (UI): The application must be easy to navigate and understand for a solo operator.
+
+Language Support: The user interface and all reports must be in English.
+
+Cross-Platform Compatibility:
+
+Phase 1: Fully functional on macOS.
+
+Phase 2: Fully functional via web browser (responsive design).
+
+Phase 3: Fully functional as a native iOS application.
+
+Minimalistic Frontend: The frontend across all three phases should be compatible and very minimalistic.
+
+2. Performance
+Responsiveness: The application should load quickly and respond promptly to user actions.
+
+Scalability: The system should be able to handle a growing client base and increased appointment volume without significant performance degradation. Efficient use of mobile device resources for Phase 3.
+
+3. Security (Phase 2)
+Data Protection: Client data (personal information, treatment history, financial data) must be securely stored and protected in compliance with GDPR regulations.
+
+Access Control: Only authorized users should have access to sensitive data and functionalities. The database layer must enforce role-based permissions.
+
+Encryption: Sensitive data must be encrypted in transit (e.g., SSL/TLS) and at rest.
+
+Password Security: Passwords must be stored as strong, one-way hashes (e.g., bcrypt, Argon2) with proper salt.
+
+Data Masking/Obfuscation: Strategies for masking or obfuscating Personally Identifiable Information (PII) in non-production environments or for specific limited-access scenarios.
+
+4. Reliability
+High Uptime: The system should be consistently available.
+
+Data Backup: Regular and automated backups of all data should be performed.
+
+Robust Error Handling: The application should gracefully handle errors and provide informative messages.
+
+5. Integrations
+Calendar Synchronization: Google Calendar, Apple Calendar.
+
+Social Media: Instagram, Facebook.
+
+AI/Chatbot: Integration with an AI service for chatbot functionality.
+
+Booking Platform: Booksy (if API allows).
+
+Communication Services: SMS Gateway Service, Email Transactional Service.
+
+6. Technical Requirements
+Backend: Developed in Python with reliance on SQL for database interaction.
+
+Hosting: On Azure, AWS, or the most cost-effective hosting provider.
+
+API: Utilize native APIs where possible and available, avoiding custom APIs unless necessary.
+
+AI and Chatbot Integration:
+
+Integrated from Phase 1.
+
+Designed to be future-proof, accounting for potential changes in AI syntax or underlying models.
+
+7. User Management (Phase 2)
+User Types:
+
+Privileged User (Admin): Full access, including direct backend access and configuration.
+
+Regular User: Access to all business functionality (client management, appointments, finance, marketing, hardware tracking, reporting) through the application interface.
+
+III. Database Design Principles
+The database schema, tables, and implementation must adhere to the following best practices:
+
+1. Normalization (Ideally to at least 3NF)
+Atomic Values: All values in columns must be atomic (indivisible).
+
+Eliminate Redundancy: Data should not be needlessly duplicated across tables. Client names (full_name) must NOT be stored in the appointments table; they will be retrieved by joining appointments.client_id with clients.client_id.
+
+Functional Dependencies: Ensure non-key attributes are dependent only on the primary key.
+
+2. Primary and Foreign Keys
+Unique Primary Keys: Each table must have a clear, unique primary key (id column). These should be auto-incrementing integers or UUIDs.
+
+Defined Foreign Keys: Foreign key relationships must be explicitly defined and used appropriately to link related data between tables.
+
+Cascading Rules: Consider and define appropriate ON DELETE and ON UPDATE cascading rules for foreign keys.
+
+3. Constraints and Validation
+NOT NULL Constraints: Apply to essential fields (e.g., all ids, names, dates, amounts, mandatory contact info).
+
+UNIQUE Constraints: Apply to fields that must be unique: email, phone_number (in clients table), and service_name (in services table).
+
+CHECK Constraints: Apply to enforce data integrity for specific ranges or conditions.
+
+Appropriate Data Types: Define precise data types for all columns (e.g., VARCHAR, DECIMAL, DATE, TIME, DATETIME, BOOLEAN, INT).
+
+4. Indexing
+Primary Keys: Automatically indexed.
+
+Foreign Keys: Create indexes on all foreign key columns to optimize join operations.
+
+Frequently Queried Columns: Create indexes on columns commonly used.
+
+5. Performance and Scalability Considerations
+Database Choice: Select a robust yet easily maintainable database system.
+
+IV. Database Tables
+All table names and column names in the backend (database and code) will be in English and follow snake_case.
+
+1. clients Table
+client_id (Primary Key)
+
+full_name (text)
+
+phone_number (text - UNIQUE)
+
+email (text - UNIQUE)
+
+facebook_id (text, nullable)
+
+instagram_id (text, nullable)
+
+booksy_id (text, nullable - e.g., an ID or identifier from Booksy if integrated, not a boolean)
+
+dob (date, nullable)
+
+is_blacklisted (Boolean)
+
+is_active (Boolean)
+
+2. appointments Table
+appointment_id (Primary Key)
+
+client_id (Foreign Key to clients)
+
+service_id (Foreign Key to services)
+
+area_id (Foreign Key to treatment_areas)
+
+appointment_date (date)
+
+start_time (time)
+
+end_time (time)
+
+session_number_for_area (integer)
+
+power (text or decimal - details machine setting)
+
+amount (decimal - price for the service charged to client)
+
+appointment_status (text, e.g., 'scheduled', 'completed', 'cancelled', 'rescheduled')
+
+payment_method_id (Foreign Key to payment_methods, nullable)
+
+next_suggested_appointment_date (date, nullable)
+
+promotion_id (Foreign Key to promotions, nullable)
+
+hardware_id (Foreign Key to hardware, nullable - if tracking specific hardware per appointment)
+
+3. services Table
+service_id (Primary Key)
+
+service_name (text - UNIQUE, e.g., 'Laser Hair Removal')
+
+description (text, nullable)
+
+base_price (decimal - the standard price for the service)
+
+estimated_duration_minutes (integer - estimated time in minutes)
+
+is_active (Boolean)
+
+4. expenses Table
+expense_id (Primary Key)
+
+expense_date (date)
+
+amount (decimal)
+
+description (text, nullable)
+
+category_id (Foreign Key to expense_categories)
+
+payment_method_id (Foreign Key to payment_methods, nullable)
+
+5. expense_categories Table
+category_id (Primary Key)
+
+category_name (text)
+
+is_tax_deductible (Boolean)
+
+6. promotions Table
+promotion_id (Primary Key)
+
+promotion_name (text)
+
+promotion_type (text, e.g., 'Loyalty', 'Referral', 'Bulk Purchase')
+
+discount_value (decimal, e.g., 0.10 for 10% or absolute value if fixed)
+
+start_date (date)
+
+end_date (date)
+
+is_active (Boolean)
+
+target_categories (text - e.g., JSON string or comma-separated list, depending on complexity)
+
+partnership_id (Foreign Key to partnerships if complex, nullable)
+
+7. operating_hours Table
+day_of_week_id (Primary Key)
+
+day_of_week (text, e.g., 'Monday', 'Tuesday')
+
+start_time (time)
+
+end_time (time)
+
+is_closed (Boolean)
+
+8. inventory Table
+item_id (Primary Key)
+
+item_name (text)
+
+current_quantity (integer or decimal)
+
+unit (text, e.g., 'ml', 'pcs')
+
+low_stock_threshold (integer or decimal)
+
+9. users Table
+user_id (Primary Key)
+
+username (text - UNIQUE)
+
+password_hash (text)
+
+role (text, e.g., 'admin', 'regular')
+
+10. treatment_areas Table
+area_id (Primary Key)
+
+area_name (text)
+
+default_price (decimal, nullable)
+
+estimated_duration_minutes (integer, nullable)
+
+11. payment_methods Table
+payment_method_id (Primary Key)
+
+method_name (text, e.g., 'Cash', 'Card', 'BLIK', 'Bank Transfer')
+
+12. hardware Table
+hardware_id (Primary Key)
+
+equipment_name (text, e.g., 'Laser Machine Model X')
+
+purchase_date (date)
+
+last_maintenance_date (date, nullable)
+
+next_maintenance_due_date (date, nullable)
+
+last_insurance_date (date, nullable)
+
+next_insurance_due_date (date, nullable)
+
+maximum_impulses_on_purchase (integer)
+
+total_impulses_recorded (integer)
+
+13. checklist_questions Table (New - for dynamic questions)
+question_id (Primary Key)
+
+question_text (text)
+
+question_type (text, e.g., 'text_input', 'yes_no', 'multi_choice')
+
+order_index (integer - for display order)
+
+is_active (boolean)
+
+14. client_checklist_answers Table (New - for dynamic questions)
+answer_id (Primary Key)
+
+client_id (Foreign Key to clients)
+
+question_id (Foreign Key to checklist_questions)
+
+answer_value (text - stores the actual answer, flexible for different types)
+
+answer_date (datetime - when the answer was recorded)
+
+is_completed (boolean - indicates if a full checklist session was completed for a client)
+
+15. owner_reminders Table
+reminder_id (Primary Key)
+
+reminder_type (text, e.g., 'Hardware Maintenance', 'Insurance', 'Accountant Visit', 'Pay Expense', 'Check Inventory')
+
+related_id (integer, nullable - Foreign Key to hardware, expenses, inventory etc., depending on type)
+
+due_date (date)
+
+reminder_date (date - when the reminder should be sent/displayed)
+
+message (text, nullable)
+
+is_active (Boolean)
+
+delivery_method (text, e.g., 'SMS', 'Email', 'Popup', 'Chatbot')

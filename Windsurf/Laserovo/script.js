@@ -1,455 +1,978 @@
+/*
+ * Laserovo - Laser Hair Removal Clinic Management System
+ * Frontend JavaScript Module
+ * 
+ * This module handles all client-side functionality including:
+ * - Client management (add, edit, search, view all)
+ * - Appointment scheduling and management
+ * - Modal management and UI interactions
+ * - API communication with error handling
+ * 
+ * Author: Laserovo Development Team
+ * Version: 2.0.0
+ * Last Updated: 2025-09-13
+ */
+
 console.log("Welcome to Laserovo!");
 
-// Clients modal wiring
-document.addEventListener('DOMContentLoaded', () => {
-  const addNewButton = document.getElementById('add-new');
-  const modifyButton = document.getElementById('modify');
-  const overlay = document.getElementById('client-modal-overlay');
-  const searchOverlay = document.getElementById('search-modal-overlay');
-  const cancelButton = document.getElementById('client-cancel');
-  const searchCancelButton = document.getElementById('search-cancel');
-  const form = document.getElementById('client-form');
-  const searchForm = document.getElementById('search-form');
-  const searchResults = document.getElementById('search-results');
-  const resultsList = document.getElementById('results-list');
-  const editOverlay = document.getElementById('edit-modal-overlay');
-  const editForm = document.getElementById('edit-form');
-  const editCancelButton = document.getElementById('edit-cancel');
-  const showAllButton = document.getElementById('show-all');
-  const showAllOverlay = document.getElementById('show-all-modal-overlay');
-  const showAllCancelButton = document.getElementById('show-all-cancel');
-  const showAllList = document.getElementById('show-all-list');
+// =============================================================================
+// GLOBAL CONFIGURATION
+// =============================================================================
 
-  // Add New modal
-  if (addNewButton && overlay && cancelButton && form) {
-    const openModal = () => {
-      overlay.removeAttribute('hidden');
-      // Focus first field for accessibility
-      const firstField = document.getElementById('client-name');
-      if (firstField) firstField.focus();
+const CONFIG = {
+    API_BASE_URL: '', // Empty for same-origin requests
+    MODAL_ANIMATION_DURATION: 200,
+    DEBOUNCE_DELAY: 300,
+    DATE_FORMAT_OPTIONS: { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit' 
+    },
+    TIME_FORMAT_OPTIONS: { 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        hour12: false 
+    }
+};
+
+// =============================================================================
+// UTILITY FUNCTIONS
+// =============================================================================
+
+/**
+ * Debounce function to limit API calls and improve performance
+ * @param {Function} func - Function to debounce
+ * @param {number} wait - Wait time in milliseconds
+ * @returns {Function} Debounced function
+ */
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
     };
+}
 
-    const closeModal = () => {
-      overlay.setAttribute('hidden', '');
-      form.reset();
-    };
+/**
+ * Display user-friendly error message with console logging
+ * @param {string} message - Error message to display
+ * @param {Error} error - Original error object (optional)
+ */
+function showError(message, error = null) {
+    console.error('Error:', message, error);
+    alert(`Error: ${message}`);
+}
 
-    addNewButton.addEventListener('click', openModal);
-    cancelButton.addEventListener('click', closeModal);
+/**
+ * Display success message with console logging
+ * @param {string} message - Success message to display
+ */
+function showSuccess(message) {
+    console.log('Success:', message);
+    alert(message);
+}
 
-    // Close when clicking backdrop
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) {
-        closeModal();
-      }
-    });
-
-    // Save handler
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const data = Object.fromEntries(new FormData(form).entries());
-      try {
-        const resp = await fetch('/clients', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
+/**
+ * Make API request with comprehensive error handling
+ * @param {string} url - API endpoint
+ * @param {Object} options - Fetch options
+ * @returns {Promise<Object>} Parsed JSON response
+ */
+async function apiRequest(url, options = {}) {
+    try {
+        const response = await fetch(url, {
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            },
+            ...options
         });
-        const json = await resp.json();
-        if (!resp.ok || json.status !== 'ok') {
-          throw new Error(json.message || 'Failed to save client');
-        }
-        closeModal();
-        alert(`Client saved. ID: ${json.id}`);
-      } catch (err) {
-        console.error(err);
-        alert('Error saving client. Please ensure the backend is running.');
-      }
-    });
-  }
-
-  // Search modal
-  if (modifyButton && searchOverlay && searchCancelButton && searchForm && searchResults && resultsList) {
-    const openSearchModal = () => {
-      searchOverlay.removeAttribute('hidden');
-      searchResults.setAttribute('hidden', '');
-      resultsList.innerHTML = '';
-      const searchTerm = document.getElementById('search-term');
-      if (searchTerm) searchTerm.focus();
-    };
-
-    const closeSearchModal = () => {
-      searchOverlay.setAttribute('hidden', '');
-      searchForm.reset();
-      searchResults.setAttribute('hidden', '');
-      resultsList.innerHTML = '';
-    };
-
-    modifyButton.addEventListener('click', openSearchModal);
-    searchCancelButton.addEventListener('click', closeSearchModal);
-
-    // Close when clicking backdrop
-    searchOverlay.addEventListener('click', (e) => {
-      if (e.target === searchOverlay) {
-        closeSearchModal();
-      }
-    });
-
-    // Search handler
-    searchForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const field = document.getElementById('search-field').value;
-      const term = document.getElementById('search-term').value.trim();
-      
-      if (!term) return;
-
-      try {
-        const resp = await fetch(`/clients/search?field=${encodeURIComponent(field)}&term=${encodeURIComponent(term)}`);
-        const json = await resp.json();
         
-        if (!resp.ok || json.status !== 'ok') {
-          throw new Error(json.message || 'Search failed');
-        }
-
-        resultsList.innerHTML = '';
+        const data = await response.json();
         
-        if (json.results.length === 0) {
-          resultsList.innerHTML = '<p>No clients found matching your search.</p>';
-        } else {
-          json.results.forEach(client => {
-            const item = document.createElement('div');
-            item.className = 'result-item';
-            item.innerHTML = `
-              <div class="result-info">
-                <div class="name">${client.name} ${client.surname}</div>
-                <div class="details">${client.email || 'No email'} • ${client.phone || 'No phone'}</div>
-              </div>
-              <button class="edit-btn" data-client-id="${client.id}">Edit</button>
-            `;
-            resultsList.appendChild(item);
-          });
+        if (!response.ok || data.status !== 'ok') {
+            throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
         }
+        
+        return data;
+    } catch (error) {
+        throw new Error(`API request failed: ${error.message}`);
+    }
+}
+
+/**
+ * Format date and time from datetime string
+ * @param {string} datetimeString - ISO datetime string
+ * @returns {Object} Object with formatted date and time
+ */
+function formatDateTime(datetimeString) {
+    if (!datetimeString) {
+        return { date: 'N/A', time: 'N/A' };
+    }
+    
+    const datetime = new Date(datetimeString);
+    if (isNaN(datetime.getTime())) {
+        return { date: 'N/A', time: 'N/A' };
+    }
+    
+    return {
+        date: datetime.toLocaleDateString('en-GB', CONFIG.DATE_FORMAT_OPTIONS),
+        time: datetime.toLocaleTimeString('en-GB', CONFIG.TIME_FORMAT_OPTIONS)
+    };
+}
+
+/**
+ * Check if current page matches the specified page name
+ * @param {string} pageName - Name of the page to check
+ * @returns {boolean} True if current page matches
+ */
+function isCurrentPage(pageName) {
+    return window.location.pathname.includes(pageName);
+}
+
+/**
+ * Create HTML element with specified content and class
+ * @param {string} tag - HTML tag name
+ * @param {string} className - CSS class name
+ * @param {string} innerHTML - HTML content
+ * @returns {HTMLElement} Created element
+ */
+function createElement(tag, className, innerHTML = '') {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    if (innerHTML) element.innerHTML = innerHTML;
+    return element;
+}
+
+// =============================================================================
+// MODAL MANAGEMENT
+// =============================================================================
+
+/**
+ * Centralized modal manager for consistent modal operations
+ */
+class ModalManager {
+    constructor() {
+        this.activeModal = null;
+    }
+    
+    /**
+     * Open a modal by ID with optional focus management
+     * @param {string} modalId - ID of the modal element
+     * @param {string} focusElementId - ID of element to focus (optional)
+     */
+    open(modalId, focusElementId = null) {
+        const modal = document.getElementById(modalId);
+        if (!modal) {
+            console.warn(`Modal with ID '${modalId}' not found`);
+            return;
+        }
+        
+        this.activeModal = modal;
+        modal.removeAttribute('hidden');
+        
+        // Focus management for accessibility
+        if (focusElementId) {
+            const focusElement = document.getElementById(focusElementId);
+            if (focusElement) {
+                setTimeout(() => focusElement.focus(), 100);
+            }
+        }
+    }
+    
+    /**
+     * Close the currently active modal
+     */
+    close() {
+        if (this.activeModal) {
+            this.activeModal.setAttribute('hidden', '');
+            this.activeModal = null;
+        }
+    }
+    
+    /**
+     * Handle backdrop click to close modal
+     * @param {Event} event - Click event
+     * @param {string} modalId - ID of the modal
+     */
+    handleBackdropClick(event, modalId) {
+        const modal = document.getElementById(modalId);
+        if (event.target === modal) {
+            this.close();
+        }
+    }
+}
+
+// Initialize global modal manager
+const modalManager = new ModalManager();
+
+// =============================================================================
+// BASE MANAGER CLASS
+// =============================================================================
+
+/**
+ * Base class for all managers with common functionality
+ */
+class BaseManager {
+    /**
+     * Get form data as object from form element
+     * @param {string} formId - ID of the form element
+     * @returns {Object} Form data as key-value pairs
+     */
+    getFormData(formId) {
+        const form = document.getElementById(formId);
+        if (!form) return {};
+        
+        const formData = new FormData(form);
+        return Object.fromEntries(formData.entries());
+    }
+    
+    /**
+     * Reset and clear form
+     * @param {string} formId - ID of the form element
+     */
+    resetForm(formId) {
+        const form = document.getElementById(formId);
+        if (form) {
+            form.reset();
+        }
+    }
+    
+    /**
+     * Setup modal event listeners with consistent behavior
+     * @param {Object} config - Configuration object
+     */
+    setupModalListeners(config) {
+        const { 
+            button, modal, cancelButton, form, 
+            openCallback, closeCallback, submitCallback 
+        } = config;
+        
+        if (!button || !modal) return;
+        
+        // Open modal
+        button.addEventListener('click', () => {
+            modalManager.open(modal.id, config.focusElementId);
+            if (openCallback) openCallback();
+        });
+        
+        // Close modal
+        if (cancelButton) {
+            cancelButton.addEventListener('click', () => {
+                modalManager.close();
+                if (closeCallback) closeCallback();
+            });
+        }
+        
+        // Backdrop click
+        modal.addEventListener('click', (e) => {
+            modalManager.handleBackdropClick(e, modal.id);
+        });
+        
+        // Form submission
+        if (form && submitCallback) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await submitCallback();
+            });
+        }
+    }
+    
+    /**
+     * Display list items with consistent formatting
+     * @param {Array} items - Array of items to display
+     * @param {HTMLElement} container - Container element
+     * @param {Function} renderCallback - Function to render each item
+     */
+    displayItems(items, container, renderCallback) {
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        if (items.length === 0) {
+            container.innerHTML = '<p>No items found.</p>';
+            return;
+        }
+        
+        items.forEach(item => {
+            const element = renderCallback(item);
+            if (element) {
+                container.appendChild(element);
+            }
+        });
+    }
+}
+
+// =============================================================================
+// CLIENT MANAGEMENT
+// =============================================================================
+
+/**
+ * Manages all client-related operations
+ */
+class ClientManager extends BaseManager {
+    constructor() {
+        super();
+        this.currentClientId = null;
+        this.initializeEventListeners();
+    }
+    
+    /**
+     * Initialize all client management event listeners
+     */
+    initializeEventListeners() {
+        this.initializeAddClient();
+        this.initializeSearchClient();
+        this.initializeEditClient();
+        this.initializeShowAllClients();
+    }
+    
+    /**
+     * Initialize add new client functionality
+     */
+    initializeAddClient() {
+        const button = document.getElementById('add-new');
+        const modal = document.getElementById('client-modal-overlay');
+        const form = document.getElementById('client-form');
+        const cancelButton = document.getElementById('client-cancel');
+        
+        this.setupModalListeners({
+            button, modal, form, cancelButton,
+            focusElementId: 'client-name',
+            submitCallback: () => this.saveClient()
+        });
+    }
+    
+    /**
+     * Save new client to database
+     */
+    async saveClient() {
+        try {
+            const data = this.getFormData('client-form');
+            const response = await apiRequest('/clients', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+            
+            modalManager.close();
+            this.resetForm('client-form');
+            showSuccess(`Client saved successfully! ID: ${response.id}`);
+            
+        } catch (error) {
+            showError('Failed to save client. Please ensure the backend is running.', error);
+        }
+    }
+    
+    /**
+     * Initialize client search functionality
+     */
+    initializeSearchClient() {
+        const button = document.getElementById('modify');
+        const modal = document.getElementById('search-modal-overlay');
+        const form = document.getElementById('search-form');
+        const cancelButton = document.getElementById('search-cancel');
+        
+        this.setupModalListeners({
+            button, modal, form, cancelButton,
+            focusElementId: 'search-term',
+            openCallback: () => this.clearSearchResults(),
+            closeCallback: () => this.closeSearchModal(),
+            submitCallback: () => this.searchClients()
+        });
+    }
+    
+    /**
+     * Search for clients based on field and term
+     */
+    async searchClients() {
+        try {
+            const field = document.getElementById('search-field').value;
+            const term = document.getElementById('search-term').value.trim();
+            
+            if (!field || !term) {
+                showError('Please select a field and enter a search term');
+                return;
+            }
+            
+            const response = await apiRequest(`/clients/search?field=${encodeURIComponent(field)}&term=${encodeURIComponent(term)}`);
+            this.displaySearchResults(response.results);
+            
+        } catch (error) {
+            showError('Failed to search clients. Please ensure the backend is running.', error);
+        }
+    }
+    
+    /**
+     * Display search results in the UI
+     * @param {Array} results - Array of client search results
+     */
+    displaySearchResults(results) {
+        const searchResults = document.getElementById('search-results');
+        const resultsList = document.getElementById('results-list');
+        
+        if (!searchResults || !resultsList) return;
         
         searchResults.removeAttribute('hidden');
-      } catch (err) {
-        console.error(err);
-        alert('Error searching clients. Please ensure the backend is running.');
-      }
-    });
-
-    // Handle edit button clicks
-    resultsList.addEventListener('click', (e) => {
-      if (e.target.classList.contains('edit-btn')) {
-        const clientId = e.target.getAttribute('data-client-id');
-        openEditModal(clientId);
-      }
-    });
-  }
-
-  // Edit modal functionality
-  if (editOverlay && editForm && editCancelButton) {
-    let currentClientId = null;
-
-    const openEditModal = async (clientId) => {
-      currentClientId = clientId;
-      try {
-        const resp = await fetch(`/clients/${clientId}`);
-        const json = await resp.json();
         
-        if (!resp.ok || json.status !== 'ok') {
-          throw new Error(json.message || 'Failed to load client');
-        }
-
-        const client = json.client;
-        
-        // Fill form with client data
-        document.getElementById('edit-name').value = client.name || '';
-        document.getElementById('edit-surname').value = client.surname || '';
-        document.getElementById('edit-phone').value = client.phone || '';
-        document.getElementById('edit-email').value = client.email || '';
-        document.getElementById('edit-facebook').value = client.facebook || '';
-        document.getElementById('edit-instagram').value = client.instagram || '';
-        document.getElementById('edit-booksy').value = client.booksy || '';
-        document.getElementById('edit-dob').value = client.dob || '';
-
-        // Close search modal and open edit modal
-        if (searchOverlay) {
-          searchOverlay.setAttribute('hidden', '');
-        }
-        editOverlay.removeAttribute('hidden');
-        document.getElementById('edit-name').focus();
-      } catch (err) {
-        console.error(err);
-        alert('Error loading client data. Please ensure the backend is running.');
-      }
-    };
-
-    const closeEditModal = () => {
-      editOverlay.setAttribute('hidden', '');
-      editForm.reset();
-      currentClientId = null;
-    };
-
-    editCancelButton.addEventListener('click', closeEditModal);
-
-    // Close when clicking backdrop
-    editOverlay.addEventListener('click', (e) => {
-      if (e.target === editOverlay) {
-        closeEditModal();
-      }
-    });
-
-    // Save handler for edit
-    editForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!currentClientId) return;
-
-      const data = Object.fromEntries(new FormData(editForm).entries());
-      try {
-        const resp = await fetch(`/clients/${currentClientId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-        const json = await resp.json();
-        
-        if (!resp.ok || json.status !== 'ok') {
-          throw new Error(json.message || 'Failed to update client');
-        }
-        
-        closeEditModal();
-        alert('Client updated successfully!');
-      } catch (err) {
-        console.error(err);
-        alert('Error updating client. Please ensure the backend is running.');
-      }
-    });
-
-    // Make openEditModal available globally for the search results
-    window.openEditModal = openEditModal;
-  }
-
-  // Show All functionality
-  if (showAllButton && showAllOverlay && showAllCancelButton && showAllList) {
-    const openShowAllModal = async () => {
-      showAllOverlay.removeAttribute('hidden');
-      showAllList.innerHTML = '<p>Loading clients...</p>';
-      
-      try {
-        const resp = await fetch('/clients');
-        const json = await resp.json();
-        
-        if (!resp.ok || json.status !== 'ok') {
-          throw new Error(json.message || 'Failed to load clients');
-        }
-
-        showAllList.innerHTML = '';
-        
-        if (json.results.length === 0) {
-          showAllList.innerHTML = '<p>No clients found.</p>';
-        } else {
-          json.results.forEach(client => {
-            const item = document.createElement('div');
-            item.className = 'result-item';
-            item.innerHTML = `
-              <div class="result-info">
-                <div class="name">${client.name} ${client.surname}</div>
-                <div class="details">${client.email || 'No email'} • ${client.phone || 'No phone'}</div>
-              </div>
-              <button class="edit-btn" data-client-id="${client.id}">Edit</button>
-            `;
-            showAllList.appendChild(item);
-          });
-        }
-      } catch (err) {
-        console.error(err);
-        showAllList.innerHTML = '<p>Error loading clients. Please ensure the backend is running.</p>';
-      }
-    };
-
-    const closeShowAllModal = () => {
-      showAllOverlay.setAttribute('hidden', '');
-      showAllList.innerHTML = '';
-    };
-
-    showAllButton.addEventListener('click', openShowAllModal);
-    showAllCancelButton.addEventListener('click', closeShowAllModal);
-
-    // Close when clicking backdrop
-    showAllOverlay.addEventListener('click', (e) => {
-      if (e.target === showAllOverlay) {
-        closeShowAllModal();
-      }
-    });
-
-    // Handle edit button clicks in show all results
-    showAllList.addEventListener('click', (e) => {
-      if (e.target.classList.contains('edit-btn')) {
-        const clientId = e.target.getAttribute('data-client-id');
-        if (window.openEditModal) {
-          closeShowAllModal();
-          window.openEditModal(clientId);
-        }
-      }
-    });
-  }
-
-  // Appointment modal functionality
-  const makeAppointmentButton = document.getElementById('make-appointment');
-  const appointmentOverlay = document.getElementById('appointment-modal-overlay');
-  const appointmentCancelButton = document.getElementById('appointment-cancel');
-  const appointmentForm = document.getElementById('appointment-form');
-  const searchClientBtn = document.getElementById('search-client-btn');
-  const clientSearchResults = document.getElementById('client-search-results');
-  const clientResultsList = document.getElementById('client-results-list');
-
-  if (makeAppointmentButton && appointmentOverlay && appointmentCancelButton && appointmentForm) {
-    const openAppointmentModal = () => {
-      appointmentOverlay.removeAttribute('hidden');
-      
-      // Set up 24-hour format for separate date and time inputs
-      const dateInput = document.getElementById('appointment-date');
-      const timeInput = document.getElementById('appointment-time');
-      
-      if (dateInput && timeInput) {
-        // Set minimum date to today
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        
-        dateInput.min = `${year}-${month}-${day}`;
-        
-        // Set default date to today
-        dateInput.value = `${year}-${month}-${day}`;
-        
-        // Set default time to next hour (24-hour format)
-        const nextHour = new Date(today);
-        nextHour.setHours(today.getHours() + 1, 0, 0, 0);
-        const nextHours = String(nextHour.getHours()).padStart(2, '0');
-        const nextMinutes = String(nextHour.getMinutes()).padStart(2, '0');
-        
-        timeInput.value = `${nextHours}:${nextMinutes}`;
-        
-        // Force 24-hour format by hiding AM/PM field
-        timeInput.setAttribute('data-format', '24');
-      }
-      
-      // Focus first field for accessibility
-      const firstField = document.getElementById('appointment-name');
-      if (firstField) firstField.focus();
-    };
-
-    const closeAppointmentModal = () => {
-      appointmentOverlay.setAttribute('hidden', '');
-      appointmentForm.reset();
-      if (clientSearchResults) {
-        clientSearchResults.setAttribute('hidden', '');
-        if (clientResultsList) clientResultsList.innerHTML = '';
-      }
-    };
-
-    makeAppointmentButton.addEventListener('click', openAppointmentModal);
-    appointmentCancelButton.addEventListener('click', closeAppointmentModal);
-
-    // Close when clicking backdrop
-    appointmentOverlay.addEventListener('click', (e) => {
-      if (e.target === appointmentOverlay) {
-        closeAppointmentModal();
-      }
-    });
-
-    // Client search functionality
-    if (searchClientBtn && clientSearchResults && clientResultsList) {
-      searchClientBtn.addEventListener('click', async () => {
-        const searchField = document.getElementById('client-search-field').value;
-        const searchTerm = document.getElementById('client-search-term').value.trim();
-        
-        if (!searchTerm) {
-          alert('Please enter a search term');
-          return;
-        }
-
-        try {
-          const resp = await fetch(`/clients/search?field=${encodeURIComponent(searchField)}&term=${encodeURIComponent(searchTerm)}`);
-          const json = await resp.json();
-          
-          if (!resp.ok || json.status !== 'ok') {
-            throw new Error(json.message || 'Search failed');
-          }
-
-          clientResultsList.innerHTML = '';
-          
-          if (json.results.length === 0) {
-            clientResultsList.innerHTML = '<p>No clients found matching your search.</p>';
-          } else {
-            json.results.forEach(client => {
-              const item = document.createElement('div');
-              item.className = 'result-item';
-              item.innerHTML = `
+        this.displayItems(results, resultsList, (client) => {
+            return createElement('div', 'result-item', `
                 <div class="result-info">
-                  <div class="name">${client.name} ${client.surname}</div>
-                  <div class="details">${client.email || 'No email'} • ${client.phone || 'No phone'}</div>
+                    <div class="name">${client.name} ${client.surname}</div>
+                    <div class="details">${client.email || 'No email'} • ${client.phone || 'No phone'}</div>
                 </div>
-                <button class="select-client-btn" data-name="${client.name}" data-surname="${client.surname}">Select</button>
-              `;
-              clientResultsList.appendChild(item);
-            });
-          }
-          
-          clientSearchResults.removeAttribute('hidden');
-        } catch (err) {
-          console.error(err);
-          alert('Error searching clients. Please ensure the backend is running.');
-        }
-      });
-
-      // Handle select client button clicks
-      clientResultsList.addEventListener('click', (e) => {
-        if (e.target.classList.contains('select-client-btn')) {
-          const name = e.target.getAttribute('data-name');
-          const surname = e.target.getAttribute('data-surname');
-          
-          // Auto-fill the form fields
-          document.getElementById('appointment-name').value = name;
-          document.getElementById('appointment-surname').value = surname;
-          
-          // Hide search results
-          clientSearchResults.setAttribute('hidden', '');
-        }
-      });
-    }
-
-    // Save appointment handler
-    appointmentForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData(appointmentForm);
-      const data = Object.fromEntries(formData.entries());
-      
-      // Combine date and time into a single datetime value
-      const date = data.appointment_date;
-      const time = data.appointment_time;
-      if (date && time) {
-        data.appointment_datetime = `${date}T${time}`;
-        delete data.appointment_date;
-        delete data.appointment_time;
-      }
-      
-      try {
-        const resp = await fetch('/appointments', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
+                <button class="edit-btn" data-client-id="${client.id}">Edit</button>
+            `);
         });
-        const json = await resp.json();
-        if (!resp.ok || json.status !== 'ok') {
-          throw new Error(json.message || 'Failed to save appointment');
+    }
+    
+    /**
+     * Clear search results and hide container
+     */
+    clearSearchResults() {
+        const searchResults = document.getElementById('search-results');
+        const resultsList = document.getElementById('results-list');
+        
+        if (searchResults) searchResults.setAttribute('hidden', '');
+        if (resultsList) resultsList.innerHTML = '';
+    }
+    
+    /**
+     * Close search modal and reset state
+     */
+    closeSearchModal() {
+        const searchModal = document.getElementById('search-modal-overlay');
+        
+        if (searchModal) {
+            searchModal.setAttribute('hidden', '');
         }
-        closeAppointmentModal();
-        alert(json.message || `Appointment saved successfully! Visit #${json.visit_number}`);
-      } catch (err) {
-        console.error(err);
-        alert('Error saving appointment. Please ensure the backend is running.');
-      }
-    });
-  }
+        this.resetForm('search-form');
+        this.clearSearchResults();
+    }
+    
+    /**
+     * Initialize edit client functionality
+     */
+    initializeEditClient() {
+        const modal = document.getElementById('edit-modal-overlay');
+        const form = document.getElementById('edit-form');
+        const cancelButton = document.getElementById('edit-cancel');
+        
+        if (!modal || !form) return;
+        
+        // Handle edit button clicks from search results
+        const resultsList = document.getElementById('results-list');
+        if (resultsList) {
+            resultsList.addEventListener('click', (e) => {
+                if (e.target.classList.contains('edit-btn')) {
+                    const clientId = e.target.getAttribute('data-client-id');
+                    this.openEditModal(clientId);
+                }
+            });
+        }
+        
+        // Setup form submission and cancel
+        if (cancelButton) {
+            cancelButton.addEventListener('click', () => {
+                modalManager.close();
+                this.resetForm('edit-form');
+            });
+        }
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.updateClient();
+        });
+        
+        // Backdrop click
+        modal.addEventListener('click', (e) => {
+            modalManager.handleBackdropClick(e, 'edit-modal-overlay');
+        });
+    }
+    
+    /**
+     * Open edit modal and populate with client data
+     * @param {string} clientId - ID of client to edit
+     */
+    async openEditModal(clientId) {
+        try {
+            const response = await apiRequest(`/clients/${clientId}`);
+            const client = response.client;
+            
+            // Populate form fields
+            const fields = ['name', 'surname', 'phone', 'email', 'facebook', 'instagram', 'booksy', 'dob'];
+            fields.forEach(field => {
+                const element = document.getElementById(`edit-${field}`);
+                if (element) {
+                    element.value = client[field] || '';
+                }
+            });
+            
+            this.currentClientId = clientId;
+            modalManager.open('edit-modal-overlay', 'edit-name');
+            
+        } catch (error) {
+            showError('Failed to load client data for editing.', error);
+        }
+    }
+    
+    /**
+     * Update client information
+     */
+    async updateClient() {
+        try {
+            const data = this.getFormData('edit-form');
+            
+            await apiRequest(`/clients/${this.currentClientId}`, {
+                method: 'PUT',
+                body: JSON.stringify(data)
+            });
+            
+            modalManager.close();
+            this.closeSearchModal();
+            this.resetForm('edit-form');
+            this.currentClientId = null;
+            
+            showSuccess('Client updated successfully!');
+            
+        } catch (error) {
+            showError('Failed to update client.', error);
+        }
+    }
+    
+    /**
+     * Initialize show all clients functionality (clients.html only)
+     */
+    initializeShowAllClients() {
+        if (!isCurrentPage('clients.html')) return;
+        
+        const button = document.getElementById('show-all');
+        const modal = document.getElementById('show-all-modal-overlay');
+        const cancelButton = document.getElementById('show-all-cancel');
+        const list = document.getElementById('show-all-list');
+        
+        this.setupModalListeners({
+            button, modal, cancelButton,
+            openCallback: () => this.loadAllClients(),
+            closeCallback: () => { if (list) list.innerHTML = ''; }
+        });
+        
+        // Handle edit button clicks from show all modal
+        if (list) {
+            list.addEventListener('click', (e) => {
+                if (e.target.classList.contains('edit-btn')) {
+                    const clientId = e.target.getAttribute('data-client-id');
+                    this.openEditModal(clientId);
+                    modalManager.close();
+                }
+            });
+        }
+    }
+    
+    /**
+     * Load and display all clients
+     */
+    async loadAllClients() {
+        try {
+            const response = await apiRequest('/clients');
+            const showAllList = document.getElementById('show-all-list');
+            
+            this.displayItems(response.results, showAllList, (client) => {
+                return createElement('div', 'client-item', `
+                    <div class="client-info">
+                        <div class="name">${client.name} ${client.surname}</div>
+                        <div class="details">
+                            <div>Phone: ${client.phone || 'N/A'}</div>
+                            <div>Email: ${client.email || 'N/A'}</div>
+                            <div>DOB: ${client.dob || 'N/A'}</div>
+                        </div>
+                    </div>
+                    <button class="edit-btn" data-client-id="${client.id}">Edit</button>
+                `);
+            });
+            
+        } catch (error) {
+            showError('Failed to load clients.', error);
+        }
+    }
+}
+
+// =============================================================================
+// APPOINTMENT MANAGEMENT
+// =============================================================================
+
+/**
+ * Manages all appointment-related operations
+ */
+class AppointmentManager extends BaseManager {
+    constructor() {
+        super();
+        this.initializeEventListeners();
+    }
+    
+    /**
+     * Initialize all appointment management event listeners
+     */
+    initializeEventListeners() {
+        this.initializeMakeAppointment();
+        this.initializeShowAllAppointments();
+    }
+    
+    /**
+     * Initialize make appointment functionality
+     */
+    initializeMakeAppointment() {
+        const button = document.getElementById('make-appointment');
+        const modal = document.getElementById('appointment-modal-overlay');
+        const form = document.getElementById('appointment-form');
+        const cancelButton = document.getElementById('appointment-cancel');
+        
+        this.setupModalListeners({
+            button, modal, form, cancelButton,
+            focusElementId: 'appointment-name',
+            openCallback: () => this.clearClientSearchResults(),
+            closeCallback: () => this.clearClientSearchResults(),
+            submitCallback: () => this.saveAppointment()
+        });
+        
+        this.initializeClientSearch();
+    }
+    
+    /**
+     * Initialize client search within appointment modal
+     */
+    initializeClientSearch() {
+        const searchBtn = document.getElementById('search-client-btn');
+        const searchResults = document.getElementById('client-search-results');
+        const resultsList = document.getElementById('client-results-list');
+        const searchTermField = document.getElementById('client-search-term');
+        
+        if (!searchBtn || !searchResults || !resultsList) return;
+        
+        // Search button click
+        searchBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await this.searchClientForAppointment();
+        });
+        
+        // Client selection from results
+        resultsList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('select-client-btn')) {
+                const clientId = e.target.getAttribute('data-client-id');
+                this.selectClientForAppointment(clientId);
+            }
+        });
+        
+        // Enter key support and input clearing
+        if (searchTermField) {
+            searchTermField.addEventListener('keypress', async (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    await this.searchClientForAppointment();
+                }
+            });
+            
+            searchTermField.addEventListener('input', () => {
+                if (!searchResults.hasAttribute('hidden')) {
+                    this.clearClientSearchResults();
+                }
+            });
+        }
+    }
+    
+    /**
+     * Search for clients within appointment modal
+     */
+    async searchClientForAppointment() {
+        try {
+            const searchField = document.getElementById('client-search-field').value;
+            const searchTerm = document.getElementById('client-search-term').value.trim();
+            
+            if (!searchTerm) {
+                showError('Please enter a search term');
+                return;
+            }
+            
+            let allResults = [];
+            
+            // Handle combined search (both name and surname)
+            if (searchField === 'both') {
+                allResults = await this.performCombinedClientSearch(searchTerm);
+            } else {
+                const response = await apiRequest(`/clients/search?field=${encodeURIComponent(searchField)}&term=${encodeURIComponent(searchTerm)}`);
+                allResults = response.results;
+            }
+            
+            this.displayClientSearchResults(allResults);
+            
+        } catch (error) {
+            showError('Failed to search clients.', error);
+        }
+    }
+    
+    /**
+     * Perform combined search by name and surname
+     * @param {string} searchTerm - Term to search for
+     * @returns {Array} Combined unique results
+     */
+    async performCombinedClientSearch(searchTerm) {
+        let allResults = [];
+        
+        // Search by name
+        try {
+            const nameResponse = await apiRequest(`/clients/search?field=name&term=${encodeURIComponent(searchTerm)}`);
+            allResults = [...nameResponse.results];
+        } catch (error) {
+            console.warn('Name search failed:', error);
+        }
+        
+        // Search by surname and merge unique results
+        try {
+            const surnameResponse = await apiRequest(`/clients/search?field=surname&term=${encodeURIComponent(searchTerm)}`);
+            const existingIds = new Set(allResults.map(client => client.id));
+            const newResults = surnameResponse.results.filter(client => !existingIds.has(client.id));
+            allResults = [...allResults, ...newResults];
+        } catch (error) {
+            console.warn('Surname search failed:', error);
+        }
+        
+        return allResults;
+    }
+    
+    /**
+     * Display client search results in appointment modal
+     * @param {Array} results - Array of client search results
+     */
+    displayClientSearchResults(results) {
+        const searchResults = document.getElementById('client-search-results');
+        const resultsList = document.getElementById('client-results-list');
+        
+        if (!searchResults || !resultsList) return;
+        
+        searchResults.removeAttribute('hidden');
+        
+        this.displayItems(results, resultsList, (client) => {
+            return createElement('div', 'client-search-item', `
+                <div class="client-info">
+                    <div class="name">${client.name} ${client.surname}</div>
+                    <div class="details">${client.email || 'No email'} • ${client.phone || 'No phone'}</div>
+                </div>
+                <button class="select-client-btn" data-client-id="${client.id}">Select</button>
+            `);
+        });
+    }
+    
+    /**
+     * Select client for appointment and populate form
+     * @param {string} clientId - ID of selected client
+     */
+    async selectClientForAppointment(clientId) {
+        try {
+            const response = await apiRequest(`/clients/${clientId}`);
+            const client = response.client;
+            
+            // Populate name and surname fields
+            const nameField = document.getElementById('appointment-name');
+            const surnameField = document.getElementById('appointment-surname');
+            
+            if (nameField) nameField.value = client.name || '';
+            if (surnameField) surnameField.value = client.surname || '';
+            
+            this.clearClientSearchResults();
+            
+            // Focus next field
+            const dateField = document.getElementById('appointment-date');
+            if (dateField) dateField.focus();
+            
+            showSuccess(`Client ${client.name} ${client.surname} selected`);
+            
+        } catch (error) {
+            showError('Failed to load client data.', error);
+        }
+    }
+    
+    /**
+     * Clear client search results in appointment modal
+     */
+    clearClientSearchResults() {
+        const searchResults = document.getElementById('client-search-results');
+        const resultsList = document.getElementById('client-results-list');
+        
+        if (searchResults) searchResults.setAttribute('hidden', '');
+        if (resultsList) resultsList.innerHTML = '';
+    }
+    
+    /**
+     * Save new appointment to database
+     */
+    async saveAppointment() {
+        try {
+            const data = this.getFormData('appointment-form');
+            
+            // Combine date and time into datetime field
+            if (data.appointment_date && data.appointment_time) {
+                data.appointment_datetime = `${data.appointment_date}T${data.appointment_time}`;
+                delete data.appointment_date;
+                delete data.appointment_time;
+            }
+            
+            const response = await apiRequest('/appointments', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+            
+            modalManager.close();
+            this.resetForm('appointment-form');
+            showSuccess(response.message || `Appointment saved successfully! Procedure #${response.procedure_number}`);
+            
+        } catch (error) {
+            showError('Failed to save appointment. Please ensure the backend is running.', error);
+        }
+    }
+    
+    /**
+     * Initialize show all appointments functionality (appointments.html only)
+     */
+    initializeShowAllAppointments() {
+        if (!isCurrentPage('appointments.html')) return;
+        
+        const button = document.getElementById('show-all');
+        const modal = document.getElementById('show-all-appointments-modal-overlay');
+        const cancelButton = document.getElementById('show-all-appointments-cancel');
+        const list = document.getElementById('show-all-appointments-list');
+        
+        this.setupModalListeners({
+            button, modal, cancelButton,
+            openCallback: () => this.loadAllAppointments(),
+            closeCallback: () => { if (list) list.innerHTML = ''; }
+        });
+        
+        // Handle appointment selection
+        if (list) {
+            list.addEventListener('click', (e) => {
+                if (e.target.classList.contains('select-appointment-btn')) {
+                    const appointmentId = e.target.getAttribute('data-appointment-id');
+                    this.selectAppointment(appointmentId);
+                }
+            });
+        }
+    }
+    
+    /**
+     * Load and display all appointments with client data
+     */
+    async loadAllAppointments() {
+        try {
+            const response = await apiRequest('/appointments');
+            const appointmentsList = document.getElementById('show-all-appointments-list');
+            
+            if (!appointmentsList) return;
+            
+            appointmentsList.innerHTML = '';
+            
+            if (response.results.length === 0) {
+                appointmentsList.innerHTML = '<p>No appointments found.</p>';
+                return;
+            }
+            
+            // Process appointments sequentially to fetch client data
+            for (const appointment of response.results) {
+                const appointmentElement = await this.createAppointmentElement(appointment);
+                if (appointmentElement) {
+                    appointmentsList.appendChild(appointmentElement);
+                }
+            }
+            
+        } catch (error) {
+            showError('Failed to load appointments.', error);
+        }
+    }
+    
+    /**
+     * Create appointment element with client data
+     * @param {Object} appointment - Appointment data
+     * @returns {HTMLElement} Appointment element
+     */
+    async createAppointmentElement(appointment) {
+        // Format date and time
+        const { date, time } = formatDateTime(appointment.appointment_datetime || appointment.datetime);
+        
+        // Fetch client data
+        let clientName = 'Unknown Client';
+        let clientSurname = '';
+        
+        if (appointment.client_id) {
+            try {
+                const clientResponse = await apiRequest(`/clients/${appointment.client_id}`);
+                if (clientResponse.client) {
+                    clientName = clientResponse.client.name || 'Unknown';
+                    clientSurname = clientResponse.client.surname || '';
+                }
+            } catch (error) {
+                console.warn(`Failed to fetch client data for ID ${appointment.client_id}:`, error);
+            }
+        }
+        
+        return createElement('div', 'appointment-item', `
+            <div class="appointment-info">
+                <span class="appointment-name">${clientName} ${clientSurname}</span>
+                <span class="appointment-area">${appointment.area || 'N/A'}</span>
+                <span class="appointment-date">${date}</span>
+                <span class="appointment-time">${time}</span>
+            </div>
+            <button class="select-appointment-btn" data-appointment-id="${appointment.id}">Select</button>
+        `);
+    }
+    
+    /**
+     * Handle appointment selection for drill-down functionality
+     * @param {string} appointmentId - ID of selected appointment
+     */
+    selectAppointment(appointmentId) {
+        modalManager.close();
+        showSuccess(`Appointment ${appointmentId} selected. Add your drill-down functionality here.`);
+        
+        // TODO: Implement drill-down functionality
+        // This could open a detailed appointment view or edit modal
+    }
+}
+
+// =============================================================================
+// APPLICATION INITIALIZATION
+// =============================================================================
+
+/**
+ * Initialize application when DOM is fully loaded
+ */
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Initializing Laserovo application...');
+    
+    try {
+        // Initialize managers
+        const clientManager = new ClientManager();
+        const appointmentManager = new AppointmentManager();
+        
+        // Make managers globally available for debugging
+        window.laserovo = {
+            clientManager,
+            appointmentManager,
+            modalManager,
+            utils: {
+                showError,
+                showSuccess,
+                apiRequest,
+                formatDateTime,
+                isCurrentPage
+            }
+        };
+        
+        console.log('Laserovo application initialized successfully!');
+        
+    } catch (error) {
+        console.error('Failed to initialize Laserovo application:', error);
+        showError('Failed to initialize application. Please refresh the page.');
+    }
 });

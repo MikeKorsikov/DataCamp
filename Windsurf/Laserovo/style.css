@@ -311,19 +311,96 @@ label small {
     background: #1f2937 !important;
 }
 
+/* Client search results styling */
+.client-search-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    margin: 8px 0;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.client-search-item:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+}
+
+.client-search-item .client-info {
+    flex: 1;
+}
+
+.client-search-item .name {
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 4px;
+}
+
+.client-search-item .details {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
 /* Select client button styling */
 .select-client-btn {
     background: #111827 !important;
     color: #ffffff !important;
     border: none !important;
     border-radius: 6px !important;
-    padding: 6px 12px !important;
+    padding: 8px 16px !important;
     cursor: pointer !important;
     font-size: 0.9rem !important;
+    transition: background-color 0.2s ease;
 }
 
 .select-client-btn:hover {
     background: #1f2937 !important;
+}
+
+/* Search section styling */
+.search-section {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.search-section h3 {
+    margin: 0 0 16px 0;
+    color: #111827;
+    font-size: 1.125rem;
+}
+
+.search-controls {
+    display: grid;
+    grid-template-columns: 1fr 2fr auto;
+    gap: 12px;
+    align-items: end;
+    margin-bottom: 16px;
+}
+
+.search-controls label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.search-controls label span {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.search-results {
+    margin-top: 16px;
+}
+
+.search-results h4 {
+    margin: 0 0 12px 0;
+    color: #111827;
+    font-size: 1rem;
 }
 
 /* Appointment save button styling */
@@ -334,4 +411,105 @@ label small {
 
 #appointment-save:hover {
     background: #1f2937 !important;
+}
+
+/* Appointment list styles */
+.appointment-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    margin: 8px 0;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.appointment-item:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+}
+
+.appointment-info {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex: 1;
+}
+
+.appointment-name {
+    font-weight: 600;
+    color: #111827;
+    min-width: 150px;
+}
+
+.appointment-area {
+    color: #374151;
+    min-width: 80px;
+    text-transform: capitalize;
+}
+
+.appointment-date {
+    color: #6b7280;
+    min-width: 100px;
+    font-family: 'Courier New', monospace;
+}
+
+.appointment-time {
+    color: #6b7280;
+    min-width: 80px;
+    font-family: 'Courier New', monospace;
+    font-weight: 500;
+}
+
+.select-appointment-btn {
+    background: #111827 !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 8px 16px !important;
+    cursor: pointer !important;
+    font-size: 0.9rem !important;
+    transition: background-color 0.2s ease;
+}
+
+.select-appointment-btn:hover {
+    background: #1f2937 !important;
+}
+
+/* Client item styles for consistency */
+.client-item {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.client-item:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+}
+
+.client-info {
+    flex: 1;
+}
+
+.client-info .name {
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #111827;
+}
+
+.client-info .details {
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+.client-info .details div {
+    margin-bottom: 2px;
 }

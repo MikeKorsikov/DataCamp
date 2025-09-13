@@ -1,0 +1,287 @@
+# from Claude (after refining business case)
+Phase 1 Desktop Application - Core Requirements & Project Structure
+Context
+Solo laser hair removal business in Poland requiring desktop application for MacBook to automate daily operations. This phase focuses on core functionality with local data storage and basic AI integration.
+Core Functional Requirements (Phase 1)
+1. Client Management
+Essential Features:
+
+Add, modify, deactivate clients (retain history)
+Store: full_name, phone, email, date_of_birth
+Blacklist flag functionality
+Search clients by name
+View client treatment history by area
+Digital health checklist (one-time per client)
+CSV import for existing client data
+
+Business Rules:
+Phone and email must be unique
+Deactivated clients retain all historical data
+Health checklist completed during first visit
+
+2. Appointment Management
+Essential Features:
+
+Manual appointment booking (owner only)
+Calendar view (daily, weekly, monthly)
+Appointment CRUD operations
+Visit spacing validation per treatment area
+Operating hours management
+Closed days management
+
+Critical Business Logic - Visit Spacing:
+
+Session 1: Initial
+Session 2: Minimum 4 weeks after Session 1
+Session 3: Minimum 6 weeks after Session 2
+Session 4: Minimum 8 weeks after Session 3
+Session 5: Minimum 10 weeks after Session 4
+Session 6: Minimum 12 weeks after Session 5
+Session 7: Minimum 14 weeks after Session 6
+Session 8: Minimum 16 weeks after Session 7
+Session 9: Minimum 18 weeks after Session 8
+Session 10: Minimum 20 weeks after Session 9
+Warning system if minimum time hasn't elapsed
+
+Operating Hours:
+
+Default: Mon-Fri 10:00-19:00, Sat 10:00-14:00, Sun Closed
+Configurable per day
+Specific closed days/ranges
+
+3. Finance Management
+Essential Features:
+
+Record sales per appointment (service, price, payment_method)
+Track expenses by category
+Payment methods: Cash, Card, Phone (NFC), Blik, Bank Transfer
+Basic expense categories with tax deductibility flags
+Simple financial reports
+
+No invoicing or payment tracking required
+4. Basic Hardware Management
+Essential Features:
+
+Single laser equipment tracking
+Maintenance date tracking
+Insurance date tracking
+Impulse count tracking
+Basic reminder system (desktop notifications)
+
+5. Essential Reporting
+Financial Reports:
+
+Monthly/YTD revenue
+Monthly/YTD expenses
+Basic profit/loss
+Revenue by treatment area
+
+Client Reports:
+
+Client treatment progress
+Visit frequency analysis
+
+Equipment Reports:
+
+Equipment utilization (impulse count)
+Maintenance schedule
+
+6. Basic AI Integration
+Essential Features:
+
+Simple chatbot for business queries
+Basic natural language processing for appointment scheduling
+Future-proof AI integration architecture
+
+Phase 1 Database Schema (Simplified)
+Core Tables:
+sql-- Essential tables for Phase 1
+clients (client_id, full_name, phone, email, dob, is_blacklisted, is_active)
+appointments (appointment_id, client_id, service_id, area_id, appointment_date, 
+              start_time, end_time, session_number_for_area, power, amount, 
+              appointment_status, payment_method_id)
+services (service_id, service_name, base_price, estimated_duration_minutes, is_active)
+treatment_areas (area_id, area_name, default_price)
+payment_methods (payment_method_id, method_name)
+expenses (expense_id, expense_date, amount, description, category_id, payment_method_id)
+expense_categories (category_id, category_name, is_tax_deductible)
+operating_hours (day_of_week_id, day_of_week, start_time, end_time, is_closed)
+closed_days (closed_day_id, closed_date, reason)
+hardware (hardware_id, equipment_name, purchase_date, last_maintenance_date, 
+          next_maintenance_due_date, total_impulses_recorded)
+checklist_questions (question_id, question_text, question_type, order_index, is_active)
+client_checklist_answers (answer_id, client_id, question_id, answer_value, answer_date)
+
+Phase 1 Project Structure
+laser_business_desktop/
+├── README.md
+├── requirements.txt
+├── .env.example
+├── .gitignore
+├── setup.py
+├── main.py                     # Application entry point
+│
+├── config/
+│   ├── __init__.py
+│   ├── settings.py             # App configuration
+│   ├── constants.py            # Business constants (spacing rules, hours)
+│   └── database_config.py      # Database settings
+│
+├── core/
+│   ├── __init__.py
+│   ├── database/
+│   │   ├── __init__.py
+│   │   ├── models.py           # SQLAlchemy models
+│   │   ├── connection.py       # Database connection (SQLite)
+│   │   ├── migrations.py       # Simple migration system
+│   │   └── seed_data.py        # Initial data setup
+│   │
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── client_service.py   # Client CRUD and business logic
+│   │   ├── appointment_service.py # Appointment logic & spacing validation
+│   │   ├── finance_service.py  # Financial calculations
+│   │   ├── hardware_service.py # Equipment tracking
+│   │   └── reporting_service.py # Report generation
+│   │
+│   ├── utils/
+│   │   ├── __init__.py
+│   │   ├── validators.py       # Input validation
+│   │   ├── date_utils.py       # Date calculations for spacing
+│   │   ├── formatters.py       # Data formatting
+│   │   ├── csv_importer.py     # CSV import functionality
+│   │   └── exceptions.py       # Custom exceptions
+│   │
+│   └── ai/
+│       ├── __init__.py
+│       ├── chatbot.py          # AI chatbot integration
+│       └── ai_client.py        # AI service client
+│
+├── gui/
+│   ├── __init__.py
+│   ├── main_window.py          # Main application window
+│   ├── components/
+│   │   ├── __init__.py
+│   │   ├── client_panel.py     # Client management interface
+│   │   ├── appointment_panel.py # Appointment calendar & booking
+│   │   ├── finance_panel.py    # Finance tracking interface
+│   │   ├── hardware_panel.py   # Equipment monitoring
+│   │   └── reports_panel.py    # Reports and analytics
+│   │
+│   ├── dialogs/
+│   │   ├── __init__.py
+│   │   ├── client_dialog.py    # Add/edit client dialog
+│   │   ├── appointment_dialog.py # Appointment booking dialog
+│   │   ├── expense_dialog.py   # Expense entry dialog
+│   │   ├── checklist_dialog.py # Health checklist dialog
+│   │   └── settings_dialog.py  # App settings
+│   │
+│   ├── widgets/
+│   │   ├── __init__.py
+│   │   ├── calendar_widget.py  # Custom calendar component
+│   │   ├── client_table.py     # Client list/search widget
+│   │   ├── appointment_table.py # Appointment list widget
+│   │   └── chart_widgets.py    # Simple charts for reports
+│   │
+│   └── styles/
+│       ├── __init__.py
+│       ├── themes.py           # UI themes and styling
+│       └── icons.py            # Icon resources
+│
+├── tests/
+│   ├── __init__.py
+│   ├── conftest.py
+│   ├── test_services/
+│   │   ├── test_client_service.py
+│   │   ├── test_appointment_service.py
+│   │   └── test_finance_service.py
+│   │
+│   ├── test_utils/
+│   │   ├── test_validators.py
+│   │   ├── test_date_utils.py
+│   │   └── test_csv_importer.py
+│   │
+│   └── test_data/
+│       ├── sample_clients.csv
+│       └── test_database.db
+│
+├── scripts/
+│   ├── __init__.py
+│   ├── setup_database.py       # Database initialization
+│   ├── backup_database.py      # Backup utilities
+│   └── sample_data_generator.py # Generate test data
+│
+├── resources/
+│   ├── icons/
+│   ├── templates/
+│   │   ├── report_templates/
+│   │   └── export_templates/
+│   │
+│   └── sample_data/
+│       ├── expense_categories.json
+│       ├── treatment_areas.json
+│       └── payment_methods.json
+│
+└── docs/
+    ├── user_manual.md
+    ├── developer_guide.md
+    └── database_schema.md
+
+Technology Stack (Phase 1)
+Core Technologies:
+Python 3.9+ - Main development language
+SQLite - Local database (simple, no server required)
+SQLAlchemy - ORM for database operations
+Tkinter - GUI framework (built-in, no external dependencies)
+Pandas - Data manipulation and CSV import
+Matplotlib - Basic charts and reports
+OpenAI API - AI chatbot integration
+
+Key Libraries:
+txtsqlalchemy>=1.4.0
+pandas>=1.5.0
+matplotlib>=3.6.0
+openai>=1.0.0
+python-dotenv>=0.19.0
+pytest>=7.0.0
+
+Development Priorities
+Phase 1A (Core MVP):
+Database setup and models
+Client management (CRUD, search)
+Basic appointment booking
+Visit spacing validation
+Simple finance tracking
+
+Phase 1B (Enhanced Features):
+Calendar interface
+Health checklist system
+CSV import functionality
+Basic reporting
+Hardware tracking
+
+Phase 1C (AI Integration):
+Chatbot implementation
+Natural language appointment queries
+Basic business insights
+
+Non-Functional Requirements (Phase 1)
+Performance:
+Application startup < 3 seconds
+Database queries < 500ms
+Smooth GUI interactions
+
+Reliability:
+Local SQLite database (no network dependencies)
+Automatic database backups
+Graceful error handling
+
+Usability:
+Intuitive desktop interface
+Keyboard shortcuts for common actions
+Clear visual feedback for validation errors
+
+Security:
+Local data storage only
+Basic input validation
+No user authentication required (single user)
