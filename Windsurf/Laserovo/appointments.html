@@ -10,8 +10,81 @@
     <main style="max-width:1000px;margin:40px auto;padding:20px;">
         <h1>Appointment Management</h1>
         <p>Placeholder page for scheduling and managing appointments.</p>
+        <div class="actions">
+            <button id="make-appointment">Make appointment</button>
+            <button id="find-appointment">Find appointment</button>
+            <button id="show-all">Show all</button>
+        </div>
         <button onclick="location.href='index.html'">Back to Home</button>
     </main>
+    
+    <!-- Make Appointment Modal -->
+    <div class="modal-overlay" id="appointment-modal-overlay" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="appointment-modal-title">
+            <div class="modal-header">
+                <h2 id="appointment-modal-title">Make Appointment</h2>
+            </div>
+            <form id="appointment-form" class="modal-body">
+                <div class="form-grid">
+                    <label>
+                        <span>Client Name</span>
+                        <input type="text" id="appointment-name" name="name" required>
+                    </label>
+                    <label>
+                        <span>Client Surname</span>
+                        <input type="text" id="appointment-surname" name="surname" required>
+                    </label>
+                    <label>
+                        <span>Appointment Date & Time <small style="color: #6b7280; font-weight: normal;">(24-hour format)</small></span>
+                        <div class="datetime-container">
+                            <input type="date" id="appointment-date" name="appointment_date" required>
+                            <input type="time" id="appointment-time" name="appointment_time" required step="900">
+                        </div>
+                    </label>
+                    <label>
+                        <span>Area [Zone]</span>
+                        <select id="appointment-area" name="area" required>
+                            <option value="">Select Area</option>
+                            <option value="face">Face</option>
+                            <option value="legs">Legs</option>
+                            <option value="arms">Arms</option>
+                            <option value="back">Back</option>
+                            <option value="chest">Chest</option>
+                            <option value="bikini">Bikini</option>
+                            <option value="full-body">Full Body</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="search-section">
+                    <h3>Search Existing Client</h3>
+                    <div class="search-controls">
+                        <label>
+                            <span>Search by:</span>
+                            <select id="client-search-field">
+                                <option value="name">Name</option>
+                                <option value="surname">Surname</option>
+                                <option value="both">Name & Surname</option>
+                            </select>
+                        </label>
+                        <label>
+                            <span>Search term:</span>
+                            <input type="text" id="client-search-term" placeholder="Enter search term...">
+                        </label>
+                        <button type="button" id="search-client-btn">Search Client</button>
+                    </div>
+                    <div id="client-search-results" class="search-results" hidden>
+                        <h4>Search Results</h4>
+                        <div id="client-results-list"></div>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" id="appointment-save">Save</button>
+                    <button type="button" id="appointment-cancel" class="secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <script src="script.js"></script>
 </body>
 </html>

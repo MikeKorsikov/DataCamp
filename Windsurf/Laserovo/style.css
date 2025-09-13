@@ -251,3 +251,87 @@ body {
 .edit-btn:hover {
     background: #1f2937;
 }
+
+/* Appointment form specific styles */
+#appointment-area {
+    font-size: 1.2rem !important;
+    padding: 12px 14px !important;
+    font-weight: 500;
+}
+
+/* DateTime container styling */
+.datetime-container {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+#appointment-date,
+#appointment-time {
+    font-size: 1.2rem !important;
+    padding: 12px 14px !important;
+    font-family: 'Courier New', monospace !important;
+    letter-spacing: 0.5px !important;
+}
+
+#appointment-time {
+    min-width: 120px;
+}
+
+/* Force 24-hour format for time input */
+#appointment-time::-webkit-datetime-edit-ampm-field {
+    display: none;
+}
+
+/* Style the time input to look more like 24-hour format */
+#appointment-time {
+    text-align: center;
+}
+
+/* Small text styling for labels */
+label small {
+    font-size: 0.8rem;
+    color: #6b7280;
+    font-weight: normal;
+}
+
+/* Search Client button styling to match Save button */
+#search-client-btn {
+    background: #111827 !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 10px 16px !important;
+    cursor: pointer !important;
+    font-size: 1rem !important;
+    align-self: flex-start !important;
+}
+
+#search-client-btn:hover {
+    background: #1f2937 !important;
+}
+
+/* Select client button styling */
+.select-client-btn {
+    background: #111827 !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 6px 12px !important;
+    cursor: pointer !important;
+    font-size: 0.9rem !important;
+}
+
+.select-client-btn:hover {
+    background: #1f2937 !important;
+}
+
+/* Appointment save button styling */
+#appointment-save {
+    background: #111827 !important;
+    color: #ffffff !important;
+}
+
+#appointment-save:hover {
+    background: #1f2937 !important;
+}

@@ -292,4 +292,164 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // Appointment modal functionality
+  const makeAppointmentButton = document.getElementById('make-appointment');
+  const appointmentOverlay = document.getElementById('appointment-modal-overlay');
+  const appointmentCancelButton = document.getElementById('appointment-cancel');
+  const appointmentForm = document.getElementById('appointment-form');
+  const searchClientBtn = document.getElementById('search-client-btn');
+  const clientSearchResults = document.getElementById('client-search-results');
+  const clientResultsList = document.getElementById('client-results-list');
+
+  if (makeAppointmentButton && appointmentOverlay && appointmentCancelButton && appointmentForm) {
+    const openAppointmentModal = () => {
+      appointmentOverlay.removeAttribute('hidden');
+      
+      // Set up 24-hour format for separate date and time inputs
+      const dateInput = document.getElementById('appointment-date');
+      const timeInput = document.getElementById('appointment-time');
+      
+      if (dateInput && timeInput) {
+        // Set minimum date to today
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        
+        dateInput.min = `${year}-${month}-${day}`;
+        
+        // Set default date to today
+        dateInput.value = `${year}-${month}-${day}`;
+        
+        // Set default time to next hour (24-hour format)
+        const nextHour = new Date(today);
+        nextHour.setHours(today.getHours() + 1, 0, 0, 0);
+        const nextHours = String(nextHour.getHours()).padStart(2, '0');
+        const nextMinutes = String(nextHour.getMinutes()).padStart(2, '0');
+        
+        timeInput.value = `${nextHours}:${nextMinutes}`;
+        
+        // Force 24-hour format by hiding AM/PM field
+        timeInput.setAttribute('data-format', '24');
+      }
+      
+      // Focus first field for accessibility
+      const firstField = document.getElementById('appointment-name');
+      if (firstField) firstField.focus();
+    };
+
+    const closeAppointmentModal = () => {
+      appointmentOverlay.setAttribute('hidden', '');
+      appointmentForm.reset();
+      if (clientSearchResults) {
+        clientSearchResults.setAttribute('hidden', '');
+        if (clientResultsList) clientResultsList.innerHTML = '';
+      }
+    };
+
+    makeAppointmentButton.addEventListener('click', openAppointmentModal);
+    appointmentCancelButton.addEventListener('click', closeAppointmentModal);
+
+    // Close when clicking backdrop
+    appointmentOverlay.addEventListener('click', (e) => {
+      if (e.target === appointmentOverlay) {
+        closeAppointmentModal();
+      }
+    });
+
+    // Client search functionality
+    if (searchClientBtn && clientSearchResults && clientResultsList) {
+      searchClientBtn.addEventListener('click', async () => {
+        const searchField = document.getElementById('client-search-field').value;
+        const searchTerm = document.getElementById('client-search-term').value.trim();
+        
+        if (!searchTerm) {
+          alert('Please enter a search term');
+          return;
+        }
+
+        try {
+          const resp = await fetch(`/clients/search?field=${encodeURIComponent(searchField)}&term=${encodeURIComponent(searchTerm)}`);
+          const json = await resp.json();
+          
+          if (!resp.ok || json.status !== 'ok') {
+            throw new Error(json.message || 'Search failed');
+          }
+
+          clientResultsList.innerHTML = '';
+          
+          if (json.results.length === 0) {
+            clientResultsList.innerHTML = '<p>No clients found matching your search.</p>';
+          } else {
+            json.results.forEach(client => {
+              const item = document.createElement('div');
+              item.className = 'result-item';
+              item.innerHTML = `
+                <div class="result-info">
+                  <div class="name">${client.name} ${client.surname}</div>
+                  <div class="details">${client.email || 'No email'} • ${client.phone || 'No phone'}</div>
+                </div>
+                <button class="select-client-btn" data-name="${client.name}" data-surname="${client.surname}">Select</button>
+              `;
+              clientResultsList.appendChild(item);
+            });
+          }
+          
+          clientSearchResults.removeAttribute('hidden');
+        } catch (err) {
+          console.error(err);
+          alert('Error searching clients. Please ensure the backend is running.');
+        }
+      });
+
+      // Handle select client button clicks
+      clientResultsList.addEventListener('click', (e) => {
+        if (e.target.classList.contains('select-client-btn')) {
+          const name = e.target.getAttribute('data-name');
+          const surname = e.target.getAttribute('data-surname');
+          
+          // Auto-fill the form fields
+          document.getElementById('appointment-name').value = name;
+          document.getElementById('appointment-surname').value = surname;
+          
+          // Hide search results
+          clientSearchResults.setAttribute('hidden', '');
+        }
+      });
+    }
+
+    // Save appointment handler
+    appointmentForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(appointmentForm);
+      const data = Object.fromEntries(formData.entries());
+      
+      // Combine date and time into a single datetime value
+      const date = data.appointment_date;
+      const time = data.appointment_time;
+      if (date && time) {
+        data.appointment_datetime = `${date}T${time}`;
+        delete data.appointment_date;
+        delete data.appointment_time;
+      }
+      
+      try {
+        const resp = await fetch('/appointments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const json = await resp.json();
+        if (!resp.ok || json.status !== 'ok') {
+          throw new Error(json.message || 'Failed to save appointment');
+        }
+        closeAppointmentModal();
+        alert(json.message || `Appointment saved successfully! Visit #${json.visit_number}`);
+      } catch (err) {
+        console.error(err);
+        alert('Error saving appointment. Please ensure the backend is running.');
+      }
+    });
+  }
 });
