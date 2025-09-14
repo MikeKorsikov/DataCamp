@@ -653,3 +653,92 @@ label small {
 .appointment-cell:last-child {
     justify-content: center;
 }
+
+/* Edit appointment modal sections styling */
+.client-info-section,
+.appointment-details-section {
+    margin-bottom: 24px;
+}
+
+.client-info-section h3,
+.appointment-details-section h3 {
+    margin: 0 0 16px 0;
+    color: #111827;
+    font-size: 1.125rem;
+    font-weight: 600;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.client-info-section input[readonly] {
+    background-color: #f9fafb !important;
+    color: #6b7280 !important;
+    cursor: not-allowed !important;
+    border-color: #e5e7eb !important;
+}
+
+.client-info-section input[readonly]:focus {
+    box-shadow: none !important;
+    border-color: #e5e7eb !important;
+}
+
+/* Edit appointment modal form styling */
+#edit-appointment-form .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: start;
+}
+
+#edit-appointment-form .form-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+#edit-appointment-form .form-grid label span {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #374151;
+    font-family: sans-serif;
+}
+
+/* Consistent styling for all edit appointment fields */
+#edit-appointment-name,
+#edit-appointment-surname,
+#edit-appointment-date,
+#edit-appointment-time,
+#edit-appointment-area,
+#edit-appointment-power,
+#edit-appointment-confirmed,
+#edit-appointment-amount {
+    padding: 10px 12px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    font-size: 1rem !important;
+    font-family: sans-serif !important;
+    line-height: 1.5 !important;
+}
+
+/* Focus states for all editable fields */
+#edit-appointment-date:focus,
+#edit-appointment-time:focus,
+#edit-appointment-area:focus,
+#edit-appointment-power:focus,
+#edit-appointment-confirmed:focus,
+#edit-appointment-amount:focus {
+    outline: none;
+    border-color: #111827;
+    box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.1);
+}
+
+/* DateTime container specific styling */
+#edit-appointment-form .datetime-container {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+#edit-appointment-form .datetime-container input {
+    flex: 1;
+}

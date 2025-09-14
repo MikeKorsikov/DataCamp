@@ -1068,10 +1068,19 @@ class AppointmentManager extends BaseManager {
             const dateField = document.getElementById('edit-appointment-date');
             const timeField = document.getElementById('edit-appointment-time');
             const areaField = document.getElementById('edit-appointment-area');
+            const powerField = document.getElementById('edit-appointment-power');
+            const confirmedField = document.getElementById('edit-appointment-confirmed');
+            const amountField = document.getElementById('edit-appointment-amount');
             
+            // Populate client information (readonly)
             if (nameField) nameField.value = clientData.name || '';
             if (surnameField) surnameField.value = clientData.surname || '';
+            
+            // Populate appointment details (editable)
             if (areaField) areaField.value = appointment.area || '';
+            if (powerField) powerField.value = appointment.power || '';
+            if (confirmedField) confirmedField.value = appointment.confirmed || 'no';
+            if (amountField) amountField.value = appointment.amount_pln || '';
             
             // Parse and set date/time
             if (appointment.appointment_datetime) {
@@ -1086,7 +1095,7 @@ class AppointmentManager extends BaseManager {
             
             // Close find modal and open edit modal
             modalManager.close();
-            modalManager.open('edit-appointment-modal-overlay', 'edit-appointment-name');
+            modalManager.open('edit-appointment-modal-overlay', 'edit-appointment-date');
             
         } catch (error) {
             showError('Failed to load appointment data.', error);
@@ -1107,24 +1116,11 @@ class AppointmentManager extends BaseManager {
                 delete data.appointment_time;
             }
             
-            // Update client data first if needed
-            if (this.currentClientId && (data.name || data.surname)) {
-                const clientData = {
-                    name: data.name,
-                    surname: data.surname
-                };
-                
-                await apiRequest(`/clients/${this.currentClientId}`, {
-                    method: 'PUT',
-                    body: JSON.stringify(clientData)
-                });
-                
-                // Remove client fields from appointment data
-                delete data.name;
-                delete data.surname;
-            }
+            // Remove readonly client fields from appointment data
+            delete data.name;
+            delete data.surname;
             
-            // Update appointment data
+            // Update appointment data with all editable fields
             await apiRequest(`/appointments/${this.currentAppointmentId}`, {
                 method: 'PUT',
                 body: JSON.stringify(data)
