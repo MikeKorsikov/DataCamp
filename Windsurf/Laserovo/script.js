@@ -1155,12 +1155,12 @@ class AppointmentManager extends BaseManager {
             closeCallback: () => { if (list) list.innerHTML = ''; }
         });
         
-        // Handle appointment selection
+        // Handle edit button clicks from show all modal
         if (list) {
             list.addEventListener('click', (e) => {
-                if (e.target.classList.contains('select-appointment-btn')) {
+                if (e.target.classList.contains('edit-appointment-btn')) {
                     const appointmentId = e.target.getAttribute('data-appointment-id');
-                    this.selectAppointment(appointmentId);
+                    this.openEditAppointmentModal(appointmentId);
                 }
             });
         }
@@ -1183,9 +1183,48 @@ class AppointmentManager extends BaseManager {
                 return;
             }
             
+            // Create table header
+            const headerElement = createElement('div', 'show-all-appointments-header', `
+                <div class="show-all-header-cell">Name</div>
+                <div class="show-all-header-cell">Surname</div>
+                <div class="show-all-header-cell">Area</div>
+                <div class="show-all-header-cell">Date</div>
+                <div class="show-all-header-cell">Time</div>
+                <div class="show-all-header-cell">Action</div>
+            `);
+            appointmentsList.appendChild(headerElement);
+            
             // Process appointments sequentially to fetch client data
             for (const appointment of response.results) {
-                const appointmentElement = await this.createAppointmentElement(appointment);
+                const { date, time } = formatDateTime(appointment.appointment_datetime);
+                
+                // Fetch client data
+                let clientName = 'Unknown';
+                let clientSurname = 'Client';
+                
+                if (appointment.client_id) {
+                    try {
+                        const clientResponse = await apiRequest(`/clients/${appointment.client_id}`);
+                        if (clientResponse.client) {
+                            clientName = clientResponse.client.name || 'Unknown';
+                            clientSurname = clientResponse.client.surname || 'Client';
+                        }
+                    } catch (error) {
+                        console.warn('Failed to fetch client data:', error);
+                    }
+                }
+                
+                const appointmentElement = createElement('div', 'show-all-appointments-row', `
+                    <div class="show-all-cell">${clientName}</div>
+                    <div class="show-all-cell">${clientSurname}</div>
+                    <div class="show-all-cell">${appointment.area || 'N/A'}</div>
+                    <div class="show-all-cell">${date}</div>
+                    <div class="show-all-cell">${time}</div>
+                    <div class="show-all-cell">
+                        <button class="edit-appointment-btn" data-appointment-id="${appointment.visit_id}">Edit</button>
+                    </div>
+                `);
+                
                 if (appointmentElement) {
                     appointmentsList.appendChild(appointmentElement);
                 }
@@ -1194,42 +1233,6 @@ class AppointmentManager extends BaseManager {
         } catch (error) {
             showError('Failed to load appointments.', error);
         }
-    }
-    
-    /**
-     * Create appointment element with client data
-     * @param {Object} appointment - Appointment data
-     * @returns {HTMLElement} Appointment element
-     */
-    async createAppointmentElement(appointment) {
-        // Format date and time
-        const { date, time } = formatDateTime(appointment.appointment_datetime);
-        
-        // Fetch client data
-        let clientName = 'Unknown Client';
-        let clientSurname = '';
-        
-        if (appointment.client_id) {
-            try {
-                const clientResponse = await apiRequest(`/clients/${appointment.client_id}`);
-                if (clientResponse.client) {
-                    clientName = clientResponse.client.name || 'Unknown';
-                    clientSurname = clientResponse.client.surname || '';
-                }
-            } catch (error) {
-                console.warn(`Failed to fetch client data for ID ${appointment.client_id}:`, error);
-            }
-        }
-        
-        return createElement('div', 'appointment-item', `
-            <div class="appointment-info">
-                <span class="appointment-name">${clientName} ${clientSurname}</span>
-                <span class="appointment-area">${appointment.area || 'N/A'}</span>
-                <span class="appointment-date">${date}</span>
-                <span class="appointment-time">${time}</span>
-            </div>
-            <button class="select-appointment-btn" data-appointment-id="${appointment.id}">Select</button>
-        `);
     }
     
     /**

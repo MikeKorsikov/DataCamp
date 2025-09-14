@@ -742,3 +742,91 @@ label small {
 #edit-appointment-form .datetime-container input {
     flex: 1;
 }
+
+/* Show All appointments modal styling */
+#show-all-appointments-modal-overlay .modal {
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#show-all-appointments-modal-overlay .modal-body {
+    max-height: calc(90vh - 120px);
+    overflow-y: auto;
+    padding: 0;
+}
+
+#show-all-appointments-list {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Show All appointments table styling */
+.show-all-appointments-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto;
+    gap: 12px;
+    padding: 12px 20px;
+    background: #f3f4f6;
+    border-bottom: 1px solid #d1d5db;
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.show-all-header-cell {
+    text-align: left;
+}
+
+.show-all-header-cell:last-child {
+    text-align: center;
+}
+
+.show-all-appointments-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto;
+    gap: 12px;
+    padding: 12px 20px;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    transition: background-color 0.2s ease;
+}
+
+.show-all-appointments-row:hover {
+    background: #f9fafb;
+}
+
+.show-all-cell {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #374151;
+}
+
+.show-all-cell:last-child {
+    justify-content: center;
+}
+
+/* Scrollbar styling for Show All modal */
+#show-all-appointments-modal-overlay .modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+#show-all-appointments-modal-overlay .modal-body::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+#show-all-appointments-modal-overlay .modal-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+#show-all-appointments-modal-overlay .modal-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}

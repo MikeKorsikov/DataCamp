@@ -495,6 +495,101 @@ def get_all_appointments():
         return create_error_response(f'Failed to retrieve appointments: {str(exc)}', HTTP_INTERNAL_SERVER_ERROR)
 
 
+@app.route('/appointments/<visit_id>', methods=['PUT', 'OPTIONS'])
+def update_appointment(visit_id: str):
+    """
+    Update an existing appointment's information.
+    
+    Args:
+        visit_id (str): Unique identifier for the appointment
+        
+    Expected JSON payload (all fields optional):
+    {
+        'appointment_datetime': str,
+        'area': str,
+        'power': str,
+        'confirmed': str,
+        'amount_pln': str
+    }
+    
+    Returns:
+        JSON response with success/error message
+    """
+    if request.method == 'OPTIONS':
+        return add_cors_headers(make_response('', HTTP_NO_CONTENT))
+    
+    try:
+        if not os.path.exists(APPOINTMENTS_CSV_FILENAME):
+            return create_error_response('No appointments found', HTTP_NOT_FOUND)
+        
+        payload = request.get_json()
+        if not payload:
+            return create_error_response('No data provided', HTTP_BAD_REQUEST)
+        
+        # Read all appointments
+        appointments = []
+        appointment_found = False
+        original_appointment = None
+        
+        with open(APPOINTMENTS_CSV_FILENAME, mode='r', newline='', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                if row['visit_id'] == visit_id:
+                    original_appointment = row.copy()
+                    appointment_found = True
+                appointments.append(row)
+        
+        if not appointment_found:
+            return create_error_response('Appointment not found', HTTP_NOT_FOUND)
+        
+        # Check if area is being changed
+        new_area = payload.get('area', '').strip()
+        area_changed = new_area and new_area != original_appointment['area']
+        
+        # Update appointments with new data
+        for appointment in appointments:
+            if appointment['visit_id'] == visit_id:
+                # Update fields except procedure_number (will be recalculated if area changed)
+                for key, value in payload.items():
+                    if key in APPOINTMENTS_CSV_FIELDS and key not in ['visit_id', 'procedure_number']:
+                        appointment[key] = str(value).strip()
+                
+                # Recalculate procedure number if area changed
+                if area_changed:
+                    client_id = appointment['client_id']
+                    # Count existing procedures for the new area (excluding current appointment)
+                    procedure_count = 0
+                    for other_apt in appointments:
+                        if (other_apt['client_id'] == client_id and 
+                            other_apt['area'].strip().lower() == new_area.strip().lower() and
+                            other_apt['visit_id'] != visit_id):
+                            try:
+                                procedure_count = max(procedure_count, int(other_apt['procedure_number']))
+                            except ValueError:
+                                continue
+                    
+                    # Set new procedure number
+                    appointment['procedure_number'] = str(procedure_count + 1)
+                
+                break
+        
+        # Write back all appointments
+        with open(APPOINTMENTS_CSV_FILENAME, mode='w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=APPOINTMENTS_CSV_FIELDS)
+            writer.writeheader()
+            writer.writerows(appointments)
+        
+        success_message = 'Appointment updated successfully'
+        if area_changed:
+            updated_appointment = next(apt for apt in appointments if apt['visit_id'] == visit_id)
+            success_message += f'. Procedure number recalculated to #{updated_appointment["procedure_number"]} for {new_area}'
+        
+        return create_success_response({'message': success_message})
+        
+    except Exception as exc:
+        return create_error_response(f'Failed to update appointment: {str(exc)}', HTTP_INTERNAL_SERVER_ERROR)
+
+
 @app.route('/')
 def serve_index():
     """
@@ -522,5 +617,3 @@ if __name__ == '__main__':
     print("Press Ctrl+C to stop the server")
     
     app.run(host='127.0.0.1', port=5000, debug=True)
-
-
