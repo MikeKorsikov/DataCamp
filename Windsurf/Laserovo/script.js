@@ -610,6 +610,8 @@ class ClientManager extends BaseManager {
 class AppointmentManager extends BaseManager {
     constructor() {
         super();
+        this.currentAppointmentId = null;
+        this.currentClientId = null;
         this.initializeEventListeners();
     }
     
@@ -618,6 +620,7 @@ class AppointmentManager extends BaseManager {
      */
     initializeEventListeners() {
         this.initializeMakeAppointment();
+        this.initializeFindAppointment();
         this.initializeShowAllAppointments();
     }
     
@@ -787,8 +790,6 @@ class AppointmentManager extends BaseManager {
             const dateField = document.getElementById('appointment-date');
             if (dateField) dateField.focus();
             
-            showSuccess(`Client ${client.name} ${client.surname} selected`);
-            
         } catch (error) {
             showError('Failed to load client data.', error);
         }
@@ -830,6 +831,314 @@ class AppointmentManager extends BaseManager {
             
         } catch (error) {
             showError('Failed to save appointment. Please ensure the backend is running.', error);
+        }
+    }
+    
+    /**
+     * Initialize find appointment functionality
+     */
+    initializeFindAppointment() {
+        const button = document.getElementById('find-appointment');
+        const modal = document.getElementById('find-appointment-modal-overlay');
+        const form = document.getElementById('find-appointment-form');
+        const cancelButton = document.getElementById('find-appointment-cancel');
+        const searchTermField = document.getElementById('appointment-search-term');
+        
+        this.setupModalListeners({
+            button, modal, form, cancelButton,
+            focusElementId: 'appointment-search-term',
+            openCallback: () => this.clearAppointmentSearchResults(),
+            closeCallback: () => this.clearAppointmentSearchResults(),
+            submitCallback: () => this.searchAppointments()
+        });
+        
+        // Handle edit button clicks from search results
+        const resultsList = document.getElementById('appointment-results-list');
+        if (resultsList) {
+            resultsList.addEventListener('click', (e) => {
+                if (e.target.classList.contains('edit-appointment-btn')) {
+                    const appointmentId = e.target.getAttribute('data-appointment-id');
+                    this.openEditAppointmentModal(appointmentId);
+                }
+            });
+        }
+        
+        // Enter key support and input clearing
+        if (searchTermField) {
+            searchTermField.addEventListener('keypress', async (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    await this.searchAppointments();
+                }
+            });
+            
+            searchTermField.addEventListener('input', () => {
+                const searchResults = document.getElementById('appointment-search-results');
+                if (searchResults && !searchResults.hasAttribute('hidden')) {
+                    this.clearAppointmentSearchResults();
+                }
+            });
+        }
+        
+        this.initializeEditAppointment();
+    }
+    
+    /**
+     * Search for appointments based on field and term
+     */
+    async searchAppointments() {
+        try {
+            const field = document.getElementById('appointment-search-field').value;
+            const term = document.getElementById('appointment-search-term').value.trim();
+            
+            if (!field || !term) {
+                showError('Please select a field and enter a search term');
+                return;
+            }
+            
+            let appointments = [];
+            
+            if (field === 'date') {
+                // Search appointments by date
+                const response = await apiRequest('/appointments');
+                const searchDate = new Date(term).toISOString().split('T')[0];
+                appointments = response.results.filter(appointment => {
+                    const appointmentDate = new Date(appointment.appointment_datetime).toISOString().split('T')[0];
+                    return appointmentDate === searchDate;
+                });
+            } else {
+                // Search by client fields (name, surname, phone)
+                const clientResponse = await apiRequest(`/clients/search?field=${encodeURIComponent(field)}&term=${encodeURIComponent(term)}`);
+                const clientIds = clientResponse.results.map(client => client.id);
+                
+                if (clientIds.length === 0) {
+                    appointments = [];
+                } else {
+                    const appointmentResponse = await apiRequest('/appointments');
+                    appointments = appointmentResponse.results.filter(appointment => 
+                        clientIds.includes(appointment.client_id)
+                    );
+                }
+            }
+            
+            await this.displayAppointmentSearchResults(appointments);
+            
+        } catch (error) {
+            showError('Failed to search appointments.', error);
+        }
+    }
+    
+    /**
+     * Display appointment search results with client data
+     * @param {Array} appointments - Array of appointment search results
+     */
+    async displayAppointmentSearchResults(appointments) {
+        const searchResults = document.getElementById('appointment-search-results');
+        const resultsList = document.getElementById('appointment-results-list');
+        
+        if (!searchResults || !resultsList) return;
+        
+        searchResults.removeAttribute('hidden');
+        resultsList.innerHTML = '';
+        
+        if (appointments.length === 0) {
+            resultsList.innerHTML = '<p>No appointments found.</p>';
+            return;
+        }
+        
+        // Create table header
+        const headerElement = createElement('div', 'appointment-results-header', `
+            <div class="appointment-header-cell">Name</div>
+            <div class="appointment-header-cell">Surname</div>
+            <div class="appointment-header-cell">Area</div>
+            <div class="appointment-header-cell">Date</div>
+            <div class="appointment-header-cell">Time</div>
+            <div class="appointment-header-cell">Action</div>
+        `);
+        resultsList.appendChild(headerElement);
+        
+        // Process appointments and fetch client data
+        for (const appointment of appointments) {
+            const { date, time } = formatDateTime(appointment.appointment_datetime);
+            
+            // Fetch client data
+            let clientName = 'Unknown';
+            let clientSurname = 'Client';
+            
+            if (appointment.client_id) {
+                try {
+                    const clientResponse = await apiRequest(`/clients/${appointment.client_id}`);
+                    if (clientResponse.client) {
+                        clientName = clientResponse.client.name || 'Unknown';
+                        clientSurname = clientResponse.client.surname || 'Client';
+                    }
+                } catch (error) {
+                    console.warn('Failed to fetch client data:', error);
+                }
+            }
+            
+            const appointmentElement = createElement('div', 'appointment-results-row', `
+                <div class="appointment-cell">${clientName}</div>
+                <div class="appointment-cell">${clientSurname}</div>
+                <div class="appointment-cell">${appointment.area || 'N/A'}</div>
+                <div class="appointment-cell">${date}</div>
+                <div class="appointment-cell">${time}</div>
+                <div class="appointment-cell">
+                    <button class="edit-appointment-btn" data-appointment-id="${appointment.visit_id}">Edit</button>
+                </div>
+            `);
+            
+            if (appointmentElement) {
+                resultsList.appendChild(appointmentElement);
+            }
+        }
+    }
+    
+    /**
+     * Clear appointment search results
+     */
+    clearAppointmentSearchResults() {
+        const searchResults = document.getElementById('appointment-search-results');
+        const resultsList = document.getElementById('appointment-results-list');
+        
+        if (searchResults) searchResults.setAttribute('hidden', '');
+        if (resultsList) resultsList.innerHTML = '';
+    }
+    
+    /**
+     * Initialize edit appointment functionality
+     */
+    initializeEditAppointment() {
+        const modal = document.getElementById('edit-appointment-modal-overlay');
+        const form = document.getElementById('edit-appointment-form');
+        const cancelButton = document.getElementById('edit-appointment-cancel');
+        
+        if (!modal || !form) return;
+        
+        // Setup form submission and cancel
+        if (cancelButton) {
+            cancelButton.addEventListener('click', () => {
+                modalManager.close();
+                this.resetForm('edit-appointment-form');
+            });
+        }
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.updateAppointment();
+        });
+        
+        // Backdrop click
+        modal.addEventListener('click', (e) => {
+            modalManager.handleBackdropClick(e, 'edit-appointment-modal-overlay');
+        });
+    }
+    
+    /**
+     * Open edit appointment modal and populate with data
+     * @param {string} appointmentId - ID of appointment to edit
+     */
+    async openEditAppointmentModal(appointmentId) {
+        try {
+            // Fetch appointment data
+            const appointmentResponse = await apiRequest('/appointments');
+            const appointment = appointmentResponse.results.find(apt => apt.visit_id === appointmentId);
+            
+            if (!appointment) {
+                showError('Appointment not found');
+                return;
+            }
+            
+            // Fetch client data
+            let clientData = { name: '', surname: '' };
+            if (appointment.client_id) {
+                try {
+                    const clientResponse = await apiRequest(`/clients/${appointment.client_id}`);
+                    if (clientResponse.client) {
+                        clientData = clientResponse.client;
+                    }
+                } catch (error) {
+                    console.warn('Failed to fetch client data:', error);
+                }
+            }
+            
+            // Populate form fields
+            const nameField = document.getElementById('edit-appointment-name');
+            const surnameField = document.getElementById('edit-appointment-surname');
+            const dateField = document.getElementById('edit-appointment-date');
+            const timeField = document.getElementById('edit-appointment-time');
+            const areaField = document.getElementById('edit-appointment-area');
+            
+            if (nameField) nameField.value = clientData.name || '';
+            if (surnameField) surnameField.value = clientData.surname || '';
+            if (areaField) areaField.value = appointment.area || '';
+            
+            // Parse and set date/time
+            if (appointment.appointment_datetime) {
+                const datetime = new Date(appointment.appointment_datetime);
+                if (dateField) dateField.value = datetime.toISOString().split('T')[0];
+                if (timeField) timeField.value = datetime.toTimeString().slice(0, 5);
+            }
+            
+            // Store appointment ID for update
+            this.currentAppointmentId = appointmentId;
+            this.currentClientId = appointment.client_id;
+            
+            // Close find modal and open edit modal
+            modalManager.close();
+            modalManager.open('edit-appointment-modal-overlay', 'edit-appointment-name');
+            
+        } catch (error) {
+            showError('Failed to load appointment data.', error);
+        }
+    }
+    
+    /**
+     * Update appointment information
+     */
+    async updateAppointment() {
+        try {
+            const data = this.getFormData('edit-appointment-form');
+            
+            // Combine date and time into datetime field
+            if (data.appointment_date && data.appointment_time) {
+                data.appointment_datetime = `${data.appointment_date}T${data.appointment_time}`;
+                delete data.appointment_date;
+                delete data.appointment_time;
+            }
+            
+            // Update client data first if needed
+            if (this.currentClientId && (data.name || data.surname)) {
+                const clientData = {
+                    name: data.name,
+                    surname: data.surname
+                };
+                
+                await apiRequest(`/clients/${this.currentClientId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(clientData)
+                });
+                
+                // Remove client fields from appointment data
+                delete data.name;
+                delete data.surname;
+            }
+            
+            // Update appointment data
+            await apiRequest(`/appointments/${this.currentAppointmentId}`, {
+                method: 'PUT',
+                body: JSON.stringify(data)
+            });
+            
+            modalManager.close();
+            this.resetForm('edit-appointment-form');
+            this.currentAppointmentId = null;
+            this.currentClientId = null;
+            
+            showSuccess('Appointment updated successfully!');
+            
+        } catch (error) {
+            showError('Failed to update appointment.', error);
         }
     }
     
@@ -898,7 +1207,7 @@ class AppointmentManager extends BaseManager {
      */
     async createAppointmentElement(appointment) {
         // Format date and time
-        const { date, time } = formatDateTime(appointment.appointment_datetime || appointment.datetime);
+        const { date, time } = formatDateTime(appointment.appointment_datetime);
         
         // Fetch client data
         let clientName = 'Unknown Client';
@@ -933,8 +1242,6 @@ class AppointmentManager extends BaseManager {
      */
     selectAppointment(appointmentId) {
         modalManager.close();
-        showSuccess(`Appointment ${appointmentId} selected. Add your drill-down functionality here.`);
-        
         // TODO: Implement drill-down functionality
         // This could open a detailed appointment view or edit modal
     }
