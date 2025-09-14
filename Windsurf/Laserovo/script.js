@@ -978,6 +978,7 @@ class AppointmentManager extends BaseManager {
             <div class="appointment-header-cell">Name</div>
             <div class="appointment-header-cell">Surname</div>
             <div class="appointment-header-cell">Area</div>
+            <div class="appointment-header-cell">Procedure #</div>
             <div class="appointment-header-cell">Date</div>
             <div class="appointment-header-cell">Time</div>
             <div class="appointment-header-cell">Action</div>
@@ -1008,6 +1009,7 @@ class AppointmentManager extends BaseManager {
                 <div class="appointment-cell">${clientName}</div>
                 <div class="appointment-cell">${clientSurname}</div>
                 <div class="appointment-cell">${appointment.area || 'N/A'}</div>
+                <div class="appointment-cell">${appointment.procedure_number || '1'}</div>
                 <div class="appointment-cell">${date}</div>
                 <div class="appointment-cell">${time}</div>
                 <div class="appointment-cell">

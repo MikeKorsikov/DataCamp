@@ -16,6 +16,7 @@ import os
 from datetime import datetime
 import uuid
 from typing import Optional, Dict, List, Any
+import shutil
 
 # Initialize Flask application
 app = Flask(__name__, static_folder='.', static_url_path='')
@@ -31,6 +32,10 @@ APPOINTMENTS_CSV_FIELDS = [
     'visit_id', 'client_id', 'procedure_number', 'appointment_datetime', 'area', 'power', 'confirmed', 'amount_pln', 'created_at'
 ]
 
+# Backup directory
+BACKUP_DIR = os.path.join(os.path.dirname(__file__), 'Backup')
+os.makedirs(BACKUP_DIR, exist_ok=True)
+
 # HTTP status codes for better readability
 HTTP_OK = 200
 HTTP_CREATED = 201
@@ -42,10 +47,6 @@ HTTP_NO_CONTENT = 204
 
 # =============================================================================
 # UTILITY FUNCTIONS
-# =============================================================================
-
-# =============================================================================
-# API ROUTES
 # =============================================================================
 
 def ensure_csv_header(filename: str, fieldnames: List[str]) -> None:
@@ -176,6 +177,54 @@ def create_success_response(data: Dict[str, Any], status_code: int = HTTP_OK) ->
     resp.status_code = status_code
     return add_cors_headers(resp)
 
+
+def backup_csv_files():
+    """Create timestamped backup copies of CSV files."""
+    try:
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        backups = {}
+        
+        # Backup clients.csv
+        if os.path.exists(CSV_FILENAME):
+            backup_filename = f'clients_backup_{timestamp}.csv'
+            backup_path = os.path.join(BACKUP_DIR, backup_filename)
+            shutil.copy2(CSV_FILENAME, backup_path)
+            backups['clients'] = backup_path
+        
+        # Backup appointments.csv
+        if os.path.exists(APPOINTMENTS_CSV_FILENAME):
+            backup_filename = f'appointments_backup_{timestamp}.csv'
+            backup_path = os.path.join(BACKUP_DIR, backup_filename)
+            shutil.copy2(APPOINTMENTS_CSV_FILENAME, backup_path)
+            backups['appointments'] = backup_path
+        
+        return {
+            'success': True,
+            'message': 'Backup created successfully',
+            'backups': backups
+        }
+    except Exception as e:
+        return {
+            'success': False,
+            'message': f'Backup failed: {str(e)}',
+            'backups': {}
+        }
+
+@app.route('/api/backup', methods=['POST'])
+def create_backup():
+    """Create a backup of all CSV files."""
+    try:
+        result = backup_csv_files()
+        if result['success']:
+            return create_success_response(result, HTTP_CREATED)
+        return create_error_response(result['message'], HTTP_INTERNAL_SERVER_ERROR)
+    except Exception as e:
+        return create_error_response(f'Backup failed: {str(e)}', HTTP_INTERNAL_SERVER_ERROR)
+
+
+# =============================================================================
+# API ROUTES
+# =============================================================================
 
 @app.route('/clients', methods=['POST', 'OPTIONS'])
 def create_client():

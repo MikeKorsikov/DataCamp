@@ -5,14 +5,96 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configurations - Laserovo</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            margin: 24px 0;
+            flex-wrap: wrap;
+        }
+        
+        .action-button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .backup-button {
+            background-color: #111827;
+            color: white;
+        }
+        
+        .backup-button:hover {
+            background-color: #1f2937;
+        }
+        
+        .backup-button::before {
+            content: '\f0c7'; /* FontAwesome backup icon */
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+        }
+    </style>
 </head>
 <body>
     <main style="max-width:1000px;margin:40px auto;padding:20px;">
         <h1>Configurations</h1>
         <p>Placeholder page for application settings.</p>
-        <button onclick="location.href='index.html'">Back to Home</button>
+        
+        <div class="action-buttons">
+            <button class="action-button backup-button" id="backup-button">Backup Data</button>
+        </div>
+        
+        <div>
+            <button onclick="location.href='index.html'" style="margin-top: 24px;">Back to Home</button>
+        </div>
     </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const backupButton = document.getElementById('backup-button');
+            
+            if (backupButton) {
+                backupButton.addEventListener('click', async function() {
+                    try {
+                        // Show loading state
+                        backupButton.disabled = true;
+                        backupButton.textContent = 'Creating Backup...';
+                        
+                        // Call backup API endpoint
+                        const response = await fetch('/api/backup', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error('Backup failed');
+                        }
+                        
+                        const data = await response.json();
+                        alert('Backup created successfully!');
+                        
+                    } catch (error) {
+                        console.error('Backup error:', error);
+                        alert('Failed to create backup. Please try again.');
+                    } finally {
+                        // Reset button state
+                        backupButton.disabled = false;
+                        backupButton.textContent = 'Backup Data';
+                    }
+                });
+            }
+        });
+    </script>
+    
     <script src="script.js"></script>
 </body>
 </html>
-

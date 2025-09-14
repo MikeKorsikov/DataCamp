@@ -611,17 +611,12 @@ label small {
 /* Appointment search results table styling */
 .appointment-results-header {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr auto;
     gap: 12px;
-    padding: 12px;
-    background: #f3f4f6;
-    border: 1px solid #d1d5db;
-    border-radius: 8px 8px 0 0;
+    padding: 12px 16px;
+    background-color: #f3f4f6;
     font-weight: 600;
-    color: #374151;
-    font-size: 0.875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.025em;
+    border-bottom: 1px solid #e5e7eb;
 }
 
 .appointment-header-cell {
@@ -634,21 +629,15 @@ label small {
 
 .appointment-results-row {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr auto;
     gap: 12px;
-    padding: 12px;
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-top: none;
-    transition: background-color 0.2s ease;
-}
-
-.appointment-results-row:hover {
-    background: #f9fafb;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    align-items: center;
 }
 
 .appointment-results-row:last-child {
-    border-radius: 0 0 8px 8px;
+    border-bottom: none;
 }
 
 .appointment-cell {
