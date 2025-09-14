@@ -830,3 +830,183 @@ label small {
 #show-all-appointments-modal-overlay .modal-body::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
 }
+
+/* Appointment Modal Form Sections */
+#appointment-modal-overlay .form-section {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+#appointment-modal-overlay .form-section:last-of-type {
+    margin-bottom: 0;
+}
+
+#appointment-modal-overlay .form-section h3 {
+    margin: 0 0 16px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #374151;
+    font-family: inherit;
+}
+
+/* Form grid consistency for appointment modal */
+#appointment-modal-overlay .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    align-items: start;
+}
+
+#appointment-modal-overlay .form-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-family: inherit;
+}
+
+#appointment-modal-overlay .form-grid label span {
+    font-weight: 500;
+    color: #374151;
+    font-size: 0.9rem;
+    font-family: inherit;
+}
+
+#appointment-modal-overlay .form-grid label span small {
+    font-weight: 400;
+    color: #6b7280;
+    font-size: 0.8rem;
+    font-family: inherit;
+}
+
+/* Input field consistency */
+#appointment-modal-overlay .form-grid input,
+#appointment-modal-overlay .form-grid select {
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    background: #ffffff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#appointment-modal-overlay .form-grid input:focus,
+#appointment-modal-overlay .form-grid select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+#appointment-modal-overlay .form-grid input[readonly] {
+    background: #f3f4f6;
+    color: #6b7280;
+    cursor: not-allowed;
+}
+
+#appointment-modal-overlay .form-grid input::placeholder {
+    color: #9ca3af;
+    font-family: inherit;
+}
+
+/* Button container for search button alignment */
+#appointment-modal-overlay .button-container {
+    display: flex;
+    align-items: end;
+    justify-content: flex-start;
+}
+
+#appointment-modal-overlay .button-container button {
+    padding: 10px 16px;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    white-space: nowrap;
+}
+
+#appointment-modal-overlay .button-container button:hover {
+    background: #2563eb;
+}
+
+/* Search results styling */
+#appointment-modal-overlay .search-results {
+    margin-top: 16px;
+    padding: 12px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+}
+
+#appointment-modal-overlay .search-results h4 {
+    margin: 0 0 12px 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #374151;
+    font-family: inherit;
+}
+
+/* Modal actions consistency */
+#appointment-modal-overlay .modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+}
+
+#appointment-modal-overlay .modal-actions button {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+#appointment-modal-overlay .modal-actions button[type="submit"] {
+    background: #10b981;
+    color: white;
+    border-color: #10b981;
+}
+
+#appointment-modal-overlay .modal-actions button[type="submit"]:hover {
+    background: #059669;
+    border-color: #059669;
+}
+
+#appointment-modal-overlay .modal-actions button.secondary {
+    background: #f3f4f6;
+    color: #374151;
+    border-color: #d1d5db;
+}
+
+#appointment-modal-overlay .modal-actions button.secondary:hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+}
+
+/* Responsive adjustments for appointment modal */
+@media (max-width: 768px) {
+    #appointment-modal-overlay .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    #appointment-modal-overlay .modal-actions {
+        flex-direction: column-reverse;
+    }
+    
+    #appointment-modal-overlay .modal-actions button {
+        width: 100%;
+    }
+}

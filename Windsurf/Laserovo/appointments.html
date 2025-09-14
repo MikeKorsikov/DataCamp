@@ -25,58 +25,90 @@
                 <h2 id="appointment-modal-title">Make Appointment</h2>
             </div>
             <form id="appointment-form" class="modal-body">
-                <div class="form-grid">
-                    <label>
-                        <span>Client Name</span>
-                        <input type="text" id="appointment-name" name="name" required>
-                    </label>
-                    <label>
-                        <span>Client Surname</span>
-                        <input type="text" id="appointment-surname" name="surname" required>
-                    </label>
-                    <label>
-                        <span>Appointment Date & Time <small style="color: #6b7280; font-weight: normal;">(24-hour format)</small></span>
-                        <div class="datetime-container">
-                            <input type="date" id="appointment-date" name="appointment_date" required>
-                            <input type="time" id="appointment-time" name="appointment_time" required step="900">
-                        </div>
-                    </label>
-                    <label>
-                        <span>Area [Zone]</span>
-                        <select id="appointment-area" name="area" required>
-                            <option value="">Select Area</option>
-                            <option value="face">Face</option>
-                            <option value="legs">Legs</option>
-                            <option value="arms">Arms</option>
-                            <option value="back">Back</option>
-                            <option value="chest">Chest</option>
-                            <option value="bikini">Bikini</option>
-                            <option value="full-body">Full Body</option>
-                        </select>
-                    </label>
-                </div>
-                <div class="search-section">
-                    <h3>Search Existing Client</h3>
-                    <div class="search-controls">
+                <!-- Client Search Section -->
+                <div class="form-section">
+                    <h3>Client Search</h3>
+                    <div class="form-grid">
                         <label>
                             <span>Search by:</span>
                             <select id="client-search-field">
                                 <option value="name">Name</option>
                                 <option value="surname">Surname</option>
-                                <option value="both">Name & Surname</option>
+                                <option value="phone">Phone</option>
                             </select>
                         </label>
                         <label>
                             <span>Search term:</span>
                             <input type="text" id="client-search-term" placeholder="Enter search term...">
                         </label>
-                        <button type="button" id="search-client-btn">Search Client</button>
+                        <div class="button-container">
+                            <button type="button" id="search-client-btn">Search Client</button>
+                        </div>
                     </div>
                     <div id="client-search-results" class="search-results" hidden>
                         <h4>Search Results</h4>
                         <div id="client-results-list"></div>
                     </div>
                 </div>
+
+                <!-- Client Information Section -->
+                <div class="form-section">
+                    <h3>Client Information</h3>
+                    <div class="form-grid">
+                        <label>
+                            <span>Name</span>
+                            <input type="text" id="appointment-name" name="name" readonly>
+                        </label>
+                        <label>
+                            <span>Surname</span>
+                            <input type="text" id="appointment-surname" name="surname" readonly>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Appointment Details Section -->
+                <div class="form-section">
+                    <h3>Appointment Details</h3>
+                    <div class="form-grid">
+                        <label>
+                            <span>Date</span>
+                            <input type="date" id="appointment-date" name="appointment_date" required>
+                        </label>
+                        <label>
+                            <span>Time <small>(24-hour format)</small></span>
+                            <input type="time" id="appointment-time" name="appointment_time" required step="900">
+                        </label>
+                        <label>
+                            <span>Area [Zone]</span>
+                            <select id="appointment-area" name="area" required>
+                                <option value="">Select Area</option>
+                                <option value="face">Face</option>
+                                <option value="legs">Legs</option>
+                                <option value="arms">Arms</option>
+                                <option value="back">Back</option>
+                                <option value="chest">Chest</option>
+                                <option value="bikini">Bikini</option>
+                                <option value="full-body">Full Body</option>
+                            </select>
+                        </label>
+                        <label>
+                            <span>Power</span>
+                            <input type="text" id="appointment-power" name="power" placeholder="Enter power setting">
+                        </label>
+                        <label>
+                            <span>Confirmed</span>
+                            <select id="appointment-confirmed" name="confirmed">
+                                <option value="no">No</option>
+                                <option value="yes">Yes</option>
+                            </select>
+                        </label>
+                        <label>
+                            <span>Amount (PLN)</span>
+                            <input type="number" id="appointment-amount" name="amount_pln" placeholder="0.00" step="0.01" min="0">
+                        </label>
+                    </div>
+                </div>
+
                 <div class="modal-actions">
                     <button type="submit" id="appointment-save">Save</button>
                     <button type="button" id="appointment-cancel" class="secondary">Cancel</button>
