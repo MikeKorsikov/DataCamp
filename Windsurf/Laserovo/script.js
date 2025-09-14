@@ -580,19 +580,46 @@ class ClientManager extends BaseManager {
             const response = await apiRequest('/clients');
             const showAllList = document.getElementById('show-all-list');
             
-            this.displayItems(response.results, showAllList, (client) => {
-                return createElement('div', 'client-item', `
-                    <div class="client-info">
-                        <div class="name">${client.name} ${client.surname}</div>
-                        <div class="details">
-                            <div>Phone: ${client.phone || 'N/A'}</div>
-                            <div>Email: ${client.email || 'N/A'}</div>
-                            <div>DOB: ${client.dob || 'N/A'}</div>
-                        </div>
+            if (!showAllList) return;
+            
+            showAllList.innerHTML = '';
+            
+            if (response.results.length === 0) {
+                showAllList.innerHTML = '<p>No clients found.</p>';
+                return;
+            }
+            
+            // Create table header
+            const headerElement = createElement('div', 'show-all-clients-header', `
+                <div class="show-all-header-cell">Name</div>
+                <div class="show-all-header-cell">Surname</div>
+                <div class="show-all-header-cell">Phone</div>
+                <div class="show-all-header-cell">Email</div>
+                <div class="show-all-header-cell">DOB</div>
+                <div class="show-all-header-cell">Action</div>
+            `);
+            
+            if (headerElement) {
+                showAllList.appendChild(headerElement);
+            }
+            
+            // Create client rows
+            for (const client of response.results) {
+                const clientElement = createElement('div', 'show-all-clients-row', `
+                    <div class="show-all-cell">${client.name || 'N/A'}</div>
+                    <div class="show-all-cell">${client.surname || 'N/A'}</div>
+                    <div class="show-all-cell">${client.phone || 'N/A'}</div>
+                    <div class="show-all-cell">${client.email || 'N/A'}</div>
+                    <div class="show-all-cell">${client.dob || 'N/A'}</div>
+                    <div class="show-all-cell">
+                        <button class="edit-btn" data-client-id="${client.id}">Edit</button>
                     </div>
-                    <button class="edit-btn" data-client-id="${client.id}">Edit</button>
                 `);
-            });
+                
+                if (clientElement) {
+                    showAllList.appendChild(clientElement);
+                }
+            }
             
         } catch (error) {
             showError('Failed to load clients.', error);

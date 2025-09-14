@@ -132,6 +132,7 @@ body {
     border: 1px solid #d1d5db;
     border-radius: 8px;
     font-size: 1rem;
+    font-family: sans-serif;
 }
 
 .modal-actions {
@@ -186,6 +187,7 @@ body {
     border: 1px solid #d1d5db;
     border-radius: 8px;
     font-size: 1rem;
+    font-family: sans-serif;
 }
 
 .search-controls button[type="submit"] {
@@ -257,6 +259,7 @@ body {
     font-size: 1.2rem !important;
     padding: 12px 14px !important;
     font-weight: 500;
+    font-family: sans-serif;
 }
 
 /* DateTime container styling */
@@ -270,7 +273,7 @@ body {
 #appointment-time {
     font-size: 1.2rem !important;
     padding: 12px 14px !important;
-    font-family: 'Courier New', monospace !important;
+    font-family: sans-serif;
     letter-spacing: 0.5px !important;
 }
 
@@ -305,6 +308,7 @@ label small {
     cursor: pointer !important;
     font-size: 1rem !important;
     align-self: flex-start !important;
+    font-family: sans-serif;
 }
 
 #search-client-btn:hover {
@@ -354,6 +358,7 @@ label small {
     cursor: pointer !important;
     font-size: 0.9rem !important;
     transition: background-color 0.2s ease;
+    font-family: sans-serif;
 }
 
 .select-client-btn:hover {
@@ -407,6 +412,7 @@ label small {
 #appointment-save {
     background: #111827 !important;
     color: #ffffff !important;
+    font-family: sans-serif;
 }
 
 #appointment-save:hover {
@@ -453,13 +459,13 @@ label small {
 .appointment-date {
     color: #6b7280;
     min-width: 100px;
-    font-family: 'Courier New', monospace;
+    font-family: sans-serif;
 }
 
 .appointment-time {
     color: #6b7280;
     min-width: 80px;
-    font-family: 'Courier New', monospace;
+    font-family: sans-serif;
     font-weight: 500;
 }
 
@@ -472,6 +478,7 @@ label small {
     cursor: pointer !important;
     font-size: 0.9rem !important;
     transition: background-color 0.2s ease;
+    font-family: sans-serif;
 }
 
 .select-appointment-btn:hover {
@@ -557,6 +564,7 @@ label small {
     cursor: pointer !important;
     font-size: 0.9rem !important;
     transition: background-color 0.2s ease;
+    font-family: sans-serif;
 }
 
 .edit-appointment-btn:hover {
@@ -888,7 +896,7 @@ label small {
     border: 1px solid #d1d5db;
     border-radius: 6px;
     font-size: 0.95rem;
-    font-family: inherit;
+    font-family: sans-serif;
     background: #ffffff;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -908,7 +916,7 @@ label small {
 
 #appointment-modal-overlay .form-grid input::placeholder {
     color: #9ca3af;
-    font-family: inherit;
+    font-family: sans-serif;
 }
 
 /* Button container for search button alignment */
@@ -920,20 +928,20 @@ label small {
 
 #appointment-modal-overlay .button-container button {
     padding: 10px 16px;
-    background: #3b82f6;
+    background: #111827;
     color: white;
     border: none;
     border-radius: 6px;
     font-size: 0.95rem;
     font-weight: 500;
-    font-family: inherit;
+    font-family: sans-serif;
     cursor: pointer;
     transition: background-color 0.2s ease;
     white-space: nowrap;
 }
 
 #appointment-modal-overlay .button-container button:hover {
-    background: #2563eb;
+    background: #1f2937;
 }
 
 /* Search results styling */
@@ -968,21 +976,21 @@ label small {
     border-radius: 6px;
     font-size: 0.95rem;
     font-weight: 500;
-    font-family: inherit;
+    font-family: sans-serif;
     cursor: pointer;
     transition: all 0.2s ease;
     border: 1px solid transparent;
 }
 
 #appointment-modal-overlay .modal-actions button[type="submit"] {
-    background: #10b981;
+    background: #111827;
     color: white;
-    border-color: #10b981;
+    border-color: #111827;
 }
 
 #appointment-modal-overlay .modal-actions button[type="submit"]:hover {
-    background: #059669;
-    border-color: #059669;
+    background: #1f2937;
+    border-color: #1f2937;
 }
 
 #appointment-modal-overlay .modal-actions button.secondary {
@@ -1009,4 +1017,112 @@ label small {
     #appointment-modal-overlay .modal-actions button {
         width: 100%;
     }
+}
+
+/* Show All Clients modal styling */
+#show-all-modal-overlay .modal {
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#show-all-modal-overlay .modal-body {
+    max-height: calc(90vh - 120px);
+    overflow-y: auto;
+    padding: 0;
+}
+
+#show-all-list {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Show All Clients table styling */
+.show-all-clients-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 2fr 1fr auto;
+    gap: 12px;
+    padding: 12px 20px;
+    background: #f3f4f6;
+    border-bottom: 1px solid #d1d5db;
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.show-all-header-cell {
+    text-align: left;
+}
+
+.show-all-header-cell:last-child {
+    text-align: center;
+}
+
+.show-all-clients-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 2fr 1fr auto;
+    gap: 12px;
+    padding: 12px 20px;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    transition: background-color 0.2s ease;
+}
+
+.show-all-clients-row:hover {
+    background: #f9fafb;
+}
+
+.show-all-clients-row .show-all-cell {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #374151;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.show-all-clients-row .show-all-cell:last-child {
+    justify-content: center;
+}
+
+/* Edit button styling for clients table */
+.show-all-clients-row .edit-btn {
+    padding: 6px 12px;
+    background: #111827;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-family: sans-serif;
+}
+
+.show-all-clients-row .edit-btn:hover {
+    background: #1f2937;
+}
+
+/* Scrollbar styling for Show All Clients modal */
+#show-all-modal-overlay .modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+#show-all-modal-overlay .modal-body::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+#show-all-modal-overlay .modal-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+#show-all-modal-overlay .modal-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
