@@ -316,7 +316,7 @@ def search_clients():
             return create_error_response('Field and term parameters are required', HTTP_BAD_REQUEST)
         
         if field not in CSV_FIELDS:
-            return create_error_response(f'Invalid field. Must be one of: {', '.join(CSV_FIELDS)}', HTTP_BAD_REQUEST)
+            rcreate_error_response(f"Invalid field. Must be one of: {', '.join(CSV_FIELDS)}", HTTP_BAD_REQUEST)
         
         results = []
         if os.path.exists(CSV_FILENAME):
