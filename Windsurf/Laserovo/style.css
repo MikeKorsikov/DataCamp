@@ -163,41 +163,65 @@ body {
 
 .modal-actions .secondary:hover { background: #d1d5db; }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
     .form-grid { grid-template-columns: 1fr; }
+    .search-controls {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .search-controls button[type="submit"] {
+        width: 100%;
+        margin-top: 4px;
+    }
 }
 
 /* Search modal styles */
 .search-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 16px;
     margin-bottom: 20px;
+    align-items: end;
 }
 
 .search-controls label {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+.search-controls span {
+    font-size: 0.9rem;
+    color: #4b5563;
+    margin-bottom: 2px;
 }
 
 .search-controls select,
 .search-controls input[type="text"] {
+    width: 100%;
+    height: 40px;
     padding: 10px 12px;
     border: 1px solid #d1d5db;
-    border-radius: 8px;
-    font-size: 1rem;
+    border-radius: 6px;
+    font-size: 0.95rem;
     font-family: sans-serif;
+    box-sizing: border-box;
+    margin: 0;
 }
 
 .search-controls button[type="submit"] {
-    align-self: flex-start;
+    height: 40px;
     background: #111827;
     color: #ffffff;
     border: none;
-    border-radius: 8px;
-    padding: 10px 16px;
+    border-radius: 6px;
+    padding: 0 20px;
     cursor: pointer;
+    white-space: nowrap;
+    font-size: 0.95rem;
 }
 
 .search-controls button[type="submit"]:hover {
