@@ -81,14 +81,8 @@
                         <label>
                             <span>Area [Zone]</span>
                             <select id="appointment-area" name="area" required>
-                                <option value="">Select Area</option>
-                                <option value="face">Face</option>
-                                <option value="legs">Legs</option>
-                                <option value="arms">Arms</option>
-                                <option value="back">Back</option>
-                                <option value="chest">Chest</option>
-                                <option value="bikini">Bikini</option>
-                                <option value="full-body">Full Body</option>
+                                
+                                <!-- Areas will be populated by JavaScript -->
                             </select>
                         </label>
                         <label>
@@ -187,14 +181,8 @@
                         <label>
                             <span>Area [Zone]</span>
                             <select id="edit-appointment-area" name="area" required>
-                                <option value="">Select Area</option>
-                                <option value="face">Face</option>
-                                <option value="legs">Legs</option>
-                                <option value="arms">Arms</option>
-                                <option value="back">Back</option>
-                                <option value="chest">Chest</option>
-                                <option value="bikini">Bikini</option>
-                                <option value="full-body">Full Body</option>
+                                
+                                <!-- Areas will be populated by JavaScript -->
                             </select>
                         </label>
                         <label>
@@ -239,5 +227,42 @@
     </div>
     
     <script src="script.js"></script>
+    <script>
+        // Function to populate area dropdowns from CONFIG.AREAS
+        function populateAreaDropdowns() {
+            const areaSelects = [
+                document.getElementById('appointment-area'),
+                document.getElementById('edit-appointment-area')
+            ];
+
+            // Filter out placeholder areas and sort alphabetically
+            const validAreas = CONFIG.AREAS
+                .filter(area => !['placeholder2', 'placeholder3'].includes(area.area))
+                .sort((a, b) => a.area.localeCompare(b.area));
+
+            areaSelects.forEach(select => {
+                if (!select) return;
+                
+                // Keep the first option (Select Area)
+                const firstOption = select.querySelector('option');
+                select.innerHTML = '';
+                if (firstOption) select.appendChild(firstOption);
+                
+                // Add areas from CONFIG.AREAS
+                validAreas.forEach(area => {
+                    const option = document.createElement('option');
+                    option.value = area.area;
+                    option.textContent = area.area
+                        .split('-')
+                        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                        .join(' ');
+                    select.appendChild(option);
+                });
+            });
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', populateAreaDropdowns);
+    </script>
 </body>
 </html>

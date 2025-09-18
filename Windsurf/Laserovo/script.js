@@ -32,7 +32,19 @@ const CONFIG = {
         hour: '2-digit', 
         minute: '2-digit', 
         hour12: false 
-    }
+    },
+    AREAS: [
+        { area_id: 1, area: 'face', recommended_procedures: 6 },
+        { area_id: 2, area: 'underarms', recommended_procedures: 6 },
+        { area_id: 3, area: 'arms', recommended_procedures: 6 },
+        { area_id: 4, area: 'legs', recommended_procedures: 8 },
+        { area_id: 5, area: 'bikini', recommended_procedures: 6 },
+        { area_id: 6, area: 'back', recommended_procedures: 6 },
+        { area_id: 7, area: 'chest', recommended_procedures: 8 },
+        { area_id: 8, area: 'full-body', recommended_procedures: 8 },
+        { area_id: 9, area: 'head', recommended_procedures: 8 },
+        { area_id: 10, area: 'belly', recommended_procedures: 6 }
+    ]
 };
 
 // =============================================================================
@@ -1172,7 +1184,20 @@ class AppointmentManager extends BaseManager {
             if (surnameField) surnameField.value = clientData.surname || '';
             
             // Populate appointment details (editable)
-            if (areaField) areaField.value = appointment.area || '';
+            if (areaField && appointment.area) {
+                // Find the option that matches the appointment area (case-insensitive)
+                const areaValue = appointment.area.toLowerCase();
+                const option = Array.from(areaField.options).find(
+                    opt => opt.value.toLowerCase() === areaValue
+                );
+                
+                if (option) {
+                    option.selected = true;
+                } else {
+                    // If no matching option found, set the value directly as fallback
+                    areaField.value = areaValue;
+                }
+            }
             if (powerField) powerField.value = appointment.power || '';
             if (confirmedField) confirmedField.value = appointment.confirmed || 'no';
             if (amountField) amountField.value = appointment.amount_pln || '';
