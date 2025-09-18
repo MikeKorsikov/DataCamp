@@ -264,7 +264,7 @@ body {
     color: #6b7280;
 }
 
-.edit-btn {
+.edit-btn, .stats-btn {
     background: #111827;
     color: #ffffff;
     border: none;
@@ -272,9 +272,10 @@ body {
     padding: 6px 12px;
     cursor: pointer;
     font-size: 0.9rem;
+    margin-left: 8px;
 }
 
-.edit-btn:hover {
+.edit-btn:hover, .stats-btn:hover {
     background: #1f2937;
 }
 
@@ -1138,4 +1139,48 @@ label small {
 
 #show-all-modal-overlay .modal-body::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
+}
+
+/* Client Statistics Modal */
+#client-stats-header {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+#client-stats-name {
+    margin: 0;
+    color: #111827;
+}
+
+.stats-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.stats-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.stats-list li:last-child {
+    border-bottom: none;
+}
+
+.stats-list .treatment-area {
+    font-weight: 500;
+    color: #111827;
+}
+
+.stats-list .visit-count {
+    background: #f3f4f6;
+    color: #111827;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 600;
 }

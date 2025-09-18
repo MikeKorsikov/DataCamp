@@ -424,6 +424,7 @@ class ClientManager extends BaseManager {
                     <div class="name">${client.name} ${client.surname}</div>
                     <div class="details">${client.email || 'No email'} • ${client.phone || 'No phone'}</div>
                 </div>
+                <button class="stats-btn" data-client-id="${client.id}">Stats</button>
                 <button class="edit-btn" data-client-id="${client.id}">Edit</button>
             `);
         });
@@ -460,16 +461,20 @@ class ClientManager extends BaseManager {
         const modal = document.getElementById('edit-modal-overlay');
         const form = document.getElementById('edit-form');
         const cancelButton = document.getElementById('edit-cancel');
+        const statsCloseButton = document.getElementById('stats-close');
         
         if (!modal || !form) return;
         
-        // Handle edit button clicks from search results
+        // Handle edit and stats button clicks from search results
         const resultsList = document.getElementById('results-list');
         if (resultsList) {
-            resultsList.addEventListener('click', (e) => {
+            resultsList.addEventListener('click', async (e) => {
                 if (e.target.classList.contains('edit-btn')) {
                     const clientId = e.target.getAttribute('data-client-id');
                     this.openEditModal(clientId);
+                } else if (e.target.classList.contains('stats-btn')) {
+                    const clientId = e.target.getAttribute('data-client-id');
+                    await this.showClientStats(clientId);
                 }
             });
         }
@@ -481,16 +486,33 @@ class ClientManager extends BaseManager {
                 this.resetForm('edit-form');
             });
         }
+
+        // Setup stats modal close button
+        if (statsCloseButton) {
+            statsCloseButton.addEventListener('click', () => {
+                document.getElementById('stats-modal-overlay').setAttribute('hidden', '');
+            });
+        }
         
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             await this.updateClient();
         });
         
-        // Backdrop click
+        // Backdrop click for edit modal
         modal.addEventListener('click', (e) => {
             modalManager.handleBackdropClick(e, 'edit-modal-overlay');
         });
+
+        // Backdrop click for stats modal
+        const statsModal = document.getElementById('stats-modal-overlay');
+        if (statsModal) {
+            statsModal.addEventListener('click', (e) => {
+                if (e.target === statsModal) {
+                    statsModal.setAttribute('hidden', '');
+                }
+            });
+        }
     }
     
     /**
@@ -623,6 +645,50 @@ class ClientManager extends BaseManager {
             
         } catch (error) {
             showError('Failed to load clients.', error);
+        }
+    }
+    
+    /**
+     * Show client statistics in a modal
+     * @param {string} clientId - ID of the client
+     */
+    async showClientStats(clientId) {
+        try {
+            // Get client details
+            const clientResponse = await apiRequest(`/clients/${clientId}`);
+            const client = clientResponse.client;
+            
+            // Set client name in the modal
+            document.getElementById('client-stats-name').textContent = `${client.name} ${client.surname}`;
+            
+            // In a real application, you would fetch the actual treatment areas and visit counts
+            // For now, we'll use mock data
+            const treatmentAreas = [
+                { name: 'Full Face', visits: 3 },
+                { name: 'Underarms', visits: 2 },
+                { name: 'Legs', visits: 0 },
+                { name: 'Bikini', visits: 1 },
+                { name: 'Arms', visits: 0 }
+            ];
+            
+            // Populate treatment areas list
+            const treatmentList = document.getElementById('treatment-areas-list');
+            treatmentList.innerHTML = '';
+            
+            treatmentAreas.forEach(area => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span class="treatment-area">${area.name}</span>
+                    <span class="visit-count">${area.visits} ${area.visits === 1 ? 'visit' : 'visits'}</span>
+                `;
+                treatmentList.appendChild(li);
+            });
+            
+            // Show the modal
+            document.getElementById('stats-modal-overlay').removeAttribute('hidden');
+            
+        } catch (error) {
+            showError('Failed to load client statistics.', error);
         }
     }
 }
