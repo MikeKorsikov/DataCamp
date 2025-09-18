@@ -673,15 +673,15 @@ class ClientManager extends BaseManager {
             // Set client name in the modal
             document.getElementById('client-stats-name').textContent = `${client.name} ${client.surname}`;
             
-            // In a real application, you would fetch the actual treatment areas and visit counts
-            // For now, we'll use mock data
-            const treatmentAreas = [
-                { name: 'Full Face', visits: 3 },
-                { name: 'Underarms', visits: 2 },
-                { name: 'Legs', visits: 0 },
-                { name: 'Bikini', visits: 1 },
-                { name: 'Arms', visits: 0 }
-            ];
+            // Get areas from CONFIG and initialize visit counts to 0
+            const treatmentAreas = CONFIG.AREAS.map(area => ({
+                name: area.area.charAt(0).toUpperCase() + area.area.slice(1), // Capitalize first letter
+                visits: 0, // Will be updated later when querying appointments
+                recommendedProcedures: area.recommended_procedures
+            }));
+            
+            // Sort areas alphabetically
+            treatmentAreas.sort((a, b) => a.name.localeCompare(b.name));
             
             // Populate treatment areas list
             const treatmentList = document.getElementById('treatment-areas-list');
@@ -689,9 +689,13 @@ class ClientManager extends BaseManager {
             
             treatmentAreas.forEach(area => {
                 const li = document.createElement('li');
+                li.className = 'stats-row';
                 li.innerHTML = `
-                    <span class="treatment-area">${area.name}</span>
-                    <span class="visit-count">${area.visits} ${area.visits === 1 ? 'visit' : 'visits'}</span>
+                    <span class="area">${area.name}</span>
+                    <span class="visits">${area.visits}</span>
+                    <span class="recommended">${area.recommendedProcedures}</span>
+                    <span class="last-visit"></span>
+                    <span class="next-visit"></span>
                 `;
                 treatmentList.appendChild(li);
             });
