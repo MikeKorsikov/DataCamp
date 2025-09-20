@@ -673,17 +673,33 @@ class ClientManager extends BaseManager {
             ]);
 
             const client = clientResponse.client;
-            const stats = statsResponse.stats;
+            const stats = statsResponse.stats || {};
+            const lastVisits = statsResponse.last_visits || {};
 
             // Set client name in the modal
             document.getElementById('client-stats-name').textContent = `${client.name} ${client.surname}`;
 
-            // Get areas from CONFIG and merge with actual visit counts
-            const treatmentAreas = CONFIG.AREAS.map(area => ({
-                name: area.area.charAt(0).toUpperCase() + area.area.slice(1),
-                visits: stats[area.area.toLowerCase()] || 0,
-                recommendedProcedures: area.recommended_procedures
-            }));
+            // Build areas with counts and last visit
+            const treatmentAreas = CONFIG.AREAS.map(cfg => {
+                const key = cfg.area.toLowerCase();
+                const name = cfg.area.charAt(0).toUpperCase() + cfg.area.slice(1);
+                const visits = stats[key] || 0;
+                const lastRaw = lastVisits[key] || '';
+                let lastDisplay = '';
+                if (lastRaw) {
+                    const dt = new Date(lastRaw);
+                    if (!isNaN(dt.getTime())) {
+                        lastDisplay = dt.toLocaleDateString('en-GB', CONFIG.DATE_FORMAT_OPTIONS);
+                    }
+                }
+                return {
+                    key,
+                    name,
+                    visits,
+                    lastDisplay,
+                    recommendedProcedures: cfg.recommended_procedures
+                };
+            });
 
             // Sort areas alphabetically
             treatmentAreas.sort((a, b) => a.name.localeCompare(b.name));
@@ -699,7 +715,7 @@ class ClientManager extends BaseManager {
                     <span class="area">${area.name}</span>
                     <span class="visits">${area.visits}</span>
                     <span class="recommended">${area.recommendedProcedures}</span>
-                    <span class="last-visit"></span>
+                    <span class="last-visit">${area.lastDisplay}</span>
                     <span class="next-visit"></span>
                 `;
                 treatmentList.appendChild(li);

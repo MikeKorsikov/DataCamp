@@ -381,17 +381,32 @@ def get_client_stats(client_id: str):
             return create_success_response({'stats': {}})
 
         stats = {}
+        last_visits: Dict[str, datetime] = {}
+        now = datetime.now()
         with open(APPOINTMENTS_CSV_FILENAME, mode='r', newline='', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for row in reader:
                 if row['client_id'] == client_id and row['confirmed'].strip().lower() == 'yes':
                     area = row['area'].strip().lower()
-                    if area:
-                        if area not in stats:
-                            stats[area] = 0
-                        stats[area] += 1
+                    if not area:
+                        continue
+                    # Parse appointment datetime
+                    dt_raw = (row.get('appointment_datetime') or '').strip()
+                    try:
+                        dt = datetime.fromisoformat(dt_raw)
+                    except Exception:
+                        continue
+                    # Only consider visits not in the future
+                    if dt <= now:
+                        # Count confirmed visits per area (up to today)
+                        stats[area] = stats.get(area, 0) + 1
+                        # Track latest confirmed visit not in the future
+                        if area not in last_visits or dt > last_visits[area]:
+                            last_visits[area] = dt
         
-        return create_success_response({'stats': stats})
+        # Convert datetimes to ISO strings for JSON response
+        last_visits_serialized: Dict[str, str] = {k: v.isoformat() for k, v in last_visits.items()}
+        return create_success_response({'stats': stats, 'last_visits': last_visits_serialized})
 
     except Exception as exc:
         return create_error_response(f'Failed to retrieve client stats: {str(exc)}', HTTP_INTERNAL_SERVER_ERROR)
@@ -525,6 +540,12 @@ def create_appointment():
         procedure_number = get_next_procedure_number(client_id, area)
         now_iso = datetime.utcnow().isoformat()
         
+        # Optional fields
+        confirmed_val = (payload.get('confirmed') or 'no').strip().lower()
+        confirmed_val = 'yes' if confirmed_val == 'yes' else 'no'
+        power_val = (payload.get('power') or '').strip()
+        amount_val = (payload.get('amount_pln') or '').strip()
+
         # Create appointment record
         record = {
             'visit_id': visit_id,
@@ -532,9 +553,9 @@ def create_appointment():
             'procedure_number': procedure_number,
             'appointment_datetime': appointment_datetime,
             'area': area,
-            'power': '',  # To be populated after visit
-            'confirmed': 'no',  # Default to not confirmed
-            'amount_pln': '',  # To be populated after visit
+            'power': power_val,  # Optional, can be filled later
+            'confirmed': confirmed_val,  # Use provided value or default to 'no'
+            'amount_pln': amount_val,  # Optional, can be filled later
             'created_at': now_iso,
         }
         
