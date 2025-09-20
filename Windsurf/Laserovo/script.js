@@ -34,16 +34,16 @@ const CONFIG = {
         hour12: false 
     },
     AREAS: [
-        { area_id: 1, area: 'face', recommended_procedures: 6 },
-        { area_id: 2, area: 'underarms', recommended_procedures: 6 },
-        { area_id: 3, area: 'arms', recommended_procedures: 6 },
-        { area_id: 4, area: 'legs', recommended_procedures: 8 },
-        { area_id: 5, area: 'bikini', recommended_procedures: 6 },
-        { area_id: 6, area: 'back', recommended_procedures: 6 },
-        { area_id: 7, area: 'chest', recommended_procedures: 8 },
-        { area_id: 8, area: 'full-body', recommended_procedures: 8 },
-        { area_id: 9, area: 'head', recommended_procedures: 8 },
-        { area_id: 10, area: 'belly', recommended_procedures: 6 }
+        { area_id: 1, area: 'face', recommended_procedures: 10 },
+        { area_id: 2, area: 'underarms', recommended_procedures: 10 },
+        { area_id: 3, area: 'arms', recommended_procedures: 10 },
+        { area_id: 4, area: 'legs', recommended_procedures: 10 },
+        { area_id: 5, area: 'bikini', recommended_procedures: 10 },
+        { area_id: 6, area: 'back', recommended_procedures: 10 },
+        { area_id: 7, area: 'chest', recommended_procedures: 10 },
+        { area_id: 8, area: 'full-body', recommended_procedures: 10 },
+        { area_id: 9, area: 'head', recommended_procedures: 10 },
+        { area_id: 10, area: 'belly', recommended_procedures: 10 }
     ],
     // Minimum waiting periods between sessions (in weeks) for the same treatment zone
     // Session 1 is initial; subsequent sessions require a minimum wait after the previous session
@@ -689,6 +689,7 @@ class ClientManager extends BaseManager {
             const client = clientResponse.client;
             const stats = statsResponse.stats || {};
             const lastVisits = statsResponse.last_visits || {};
+            const lastProcedures = statsResponse.last_procedures || {};
 
             // Set client name in the modal
             document.getElementById('client-stats-name').textContent = `${client.name} ${client.surname}`;
@@ -706,8 +707,9 @@ class ClientManager extends BaseManager {
                     const dt = new Date(lastRaw);
                     if (!isNaN(dt.getTime())) {
                         lastDisplay = dt.toLocaleDateString('en-GB', CONFIG.DATE_FORMAT_OPTIONS);
-                        // Determine next session number and required wait (in weeks)
-                        const nextSession = (visits || 0) + 1;
+                        // Determine next session number and required wait (in weeks) based on last procedure number
+                        const lastProcNum = lastProcedures[key] || 0;
+                        const nextSession = lastProcNum + 1;
                         const waitCfg = CONFIG.SESSION_WAIT && CONFIG.SESSION_WAIT[nextSession];
                         const weeks = waitCfg && typeof waitCfg.min_weeks_after_previous === 'number' ? waitCfg.min_weeks_after_previous : null;
                         if (weeks !== null) {
@@ -725,10 +727,13 @@ class ClientManager extends BaseManager {
                         }
                     }
                 }
+                // Procedure # is the actual procedure_number of the latest confirmed, non-future visit for this area
+                const procedureNumber = lastProcedures[key] || '';
                 return {
                     key,
                     name,
                     visits,
+                    procedureNumber,
                     lastDisplay,
                     nextDisplay,
                     nextOverdue,
@@ -749,6 +754,7 @@ class ClientManager extends BaseManager {
                 li.innerHTML = `
                     <span class="area">${area.name}</span>
                     <span class="visits">${area.visits}</span>
+                    <span class="procedure">${area.procedureNumber}</span>
                     <span class="recommended">${area.recommendedProcedures}</span>
                     <span class="last-visit">${area.lastDisplay}</span>
                     <span class="next-visit ${area.nextOverdue ? 'overdue' : ''}">${area.nextDisplay || ''}</span>

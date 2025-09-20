@@ -1159,7 +1159,7 @@ label small {
 
 .stats-header {
     display: grid;
-    grid-template-columns: 1fr auto auto auto auto;
+    grid-template-columns: 1fr auto auto auto auto auto; /* Added Procedure # column */
     gap: 16px;
     padding: 12px 16px;
     background-color: #f9fafb;
@@ -1175,6 +1175,7 @@ label small {
 }
 
 .stats-header .visits-header,
+.stats-header .procedure-header,
 .stats-header .recommended-header,
 .stats-header .last-visit-header,
 .stats-header .next-visit-header {
@@ -1190,7 +1191,7 @@ label small {
 
 .stats-list li {
     display: grid;
-    grid-template-columns: 1fr auto auto auto auto;
+    grid-template-columns: 1fr auto auto auto auto auto; /* Added Procedure # column */
     gap: 16px;
     align-items: center;
     padding: 12px 16px;
@@ -1212,6 +1213,7 @@ label small {
 }
 
 .stats-list .visits,
+.stats-list .procedure,
 .stats-list .recommended,
 .stats-list .last-visit,
 .stats-list .next-visit {
@@ -1241,4 +1243,9 @@ label small {
 .stats-list .next-visit.overdue {
     color: #dc2626; /* red-600 */
     font-weight: 700;
+}
+
+/* Widen stats modal to fit the extra column */
+#stats-modal-overlay .modal {
+    max-width: 960px;
 }

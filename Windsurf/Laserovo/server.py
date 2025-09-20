@@ -382,6 +382,7 @@ def get_client_stats(client_id: str):
 
         stats = {}
         last_visits: Dict[str, datetime] = {}
+        last_procedures: Dict[str, int] = {}
         now = datetime.now()
         with open(APPOINTMENTS_CSV_FILENAME, mode='r', newline='', encoding='utf-8') as f:
             reader = csv.DictReader(f)
@@ -403,10 +404,15 @@ def get_client_stats(client_id: str):
                         # Track latest confirmed visit not in the future
                         if area not in last_visits or dt > last_visits[area]:
                             last_visits[area] = dt
+                            # Update last procedure number for this latest visit
+                            try:
+                                last_procedures[area] = int(row.get('procedure_number') or 0)
+                            except ValueError:
+                                last_procedures[area] = 0
         
         # Convert datetimes to ISO strings for JSON response
         last_visits_serialized: Dict[str, str] = {k: v.isoformat() for k, v in last_visits.items()}
-        return create_success_response({'stats': stats, 'last_visits': last_visits_serialized})
+        return create_success_response({'stats': stats, 'last_visits': last_visits_serialized, 'last_procedures': last_procedures})
 
     except Exception as exc:
         return create_error_response(f'Failed to retrieve client stats: {str(exc)}', HTTP_INTERNAL_SERVER_ERROR)
