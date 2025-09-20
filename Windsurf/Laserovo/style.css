@@ -1249,3 +1249,33 @@ label small {
 #stats-modal-overlay .modal {
     max-width: 960px;
 }
+
+/* Client Statistics Modal - scoped layout and centering overrides */
+#stats-modal-overlay .stats-header {
+    grid-template-columns: minmax(180px, 2fr) repeat(5, minmax(120px, 1fr));
+}
+
+#stats-modal-overlay .stats-header .area-header {
+    text-align: left;
+    justify-self: start;
+}
+
+#stats-modal-overlay .stats-list li {
+    grid-template-columns: minmax(180px, 2fr) repeat(5, minmax(120px, 1fr));
+    justify-items: center; /* center values for all non-Area columns */
+}
+
+#stats-modal-overlay .stats-list .area {
+    justify-self: start; /* keep Area left-aligned */
+}
+
+#stats-modal-overlay .stats-list .progress,
+#stats-modal-overlay .stats-header .progress-header {
+    justify-self: center;
+}
+
+#stats-modal-overlay .stats-list .progress {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}

@@ -729,15 +729,23 @@ class ClientManager extends BaseManager {
                 }
                 // Procedure # is the actual procedure_number of the latest confirmed, non-future visit for this area
                 const procedureNumber = lastProcedures[key] || '';
+                const recommendedProcedures = cfg.recommended_procedures || 0;
+                const pctNum = (procedureNumber && recommendedProcedures)
+                    ? Math.round(Math.min(100, Math.max(0, (procedureNumber / recommendedProcedures) * 100)))
+                    : null;
+                const progressPct = pctNum !== null ? `${pctNum}%` : '';
+                const progressLevel = pctNum === null ? '' : (pctNum < 50 ? 'level-low' : (pctNum < 80 ? 'level-mid' : 'level-high'));
                 return {
                     key,
                     name,
                     visits,
                     procedureNumber,
+                    recommendedProcedures,
+                    progressPct,
+                    progressLevel,
                     lastDisplay,
                     nextDisplay,
                     nextOverdue,
-                    recommendedProcedures: cfg.recommended_procedures
                 };
             });
 
@@ -755,7 +763,10 @@ class ClientManager extends BaseManager {
                     <span class="area">${area.name}</span>
                     <span class="visits">${area.visits}</span>
                     <span class="procedure">${area.procedureNumber}</span>
-                    <span class="recommended">${area.recommendedProcedures}</span>
+                    <span class="progress">
+                        <span class="progress-track"><span class="progress-fill ${area.progressLevel}" style="width: ${area.progressPct}"></span></span>
+                        <span class="progress-text">${area.progressPct}</span>
+                    </span>
                     <span class="last-visit">${area.lastDisplay}</span>
                     <span class="next-visit ${area.nextOverdue ? 'overdue' : ''}">${area.nextDisplay || ''}</span>
                 `;
