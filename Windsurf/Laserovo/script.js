@@ -666,27 +666,32 @@ class ClientManager extends BaseManager {
      */
     async showClientStats(clientId) {
         try {
-            // Get client details
-            const clientResponse = await apiRequest(`/clients/${clientId}`);
+            // Get client details and stats in parallel
+            const [clientResponse, statsResponse] = await Promise.all([
+                apiRequest(`/clients/${clientId}`),
+                apiRequest(`/clients/${clientId}/stats`)
+            ]);
+
             const client = clientResponse.client;
-            
+            const stats = statsResponse.stats;
+
             // Set client name in the modal
             document.getElementById('client-stats-name').textContent = `${client.name} ${client.surname}`;
-            
-            // Get areas from CONFIG and initialize visit counts to 0
+
+            // Get areas from CONFIG and merge with actual visit counts
             const treatmentAreas = CONFIG.AREAS.map(area => ({
-                name: area.area.charAt(0).toUpperCase() + area.area.slice(1), // Capitalize first letter
-                visits: 0, // Will be updated later when querying appointments
+                name: area.area.charAt(0).toUpperCase() + area.area.slice(1),
+                visits: stats[area.area.toLowerCase()] || 0,
                 recommendedProcedures: area.recommended_procedures
             }));
-            
+
             // Sort areas alphabetically
             treatmentAreas.sort((a, b) => a.name.localeCompare(b.name));
-            
+
             // Populate treatment areas list
             const treatmentList = document.getElementById('treatment-areas-list');
             treatmentList.innerHTML = '';
-            
+
             treatmentAreas.forEach(area => {
                 const li = document.createElement('li');
                 li.className = 'stats-row';
@@ -699,10 +704,10 @@ class ClientManager extends BaseManager {
                 `;
                 treatmentList.appendChild(li);
             });
-            
+
             // Show the modal
             document.getElementById('stats-modal-overlay').removeAttribute('hidden');
-            
+
         } catch (error) {
             showError('Failed to load client statistics.', error);
         }

@@ -362,6 +362,41 @@ def get_client(client_id: str):
         return create_error_response(f'Failed to retrieve client: {str(exc)}', HTTP_INTERNAL_SERVER_ERROR)
 
 
+@app.route('/clients/<client_id>/stats', methods=['GET', 'OPTIONS'])
+def get_client_stats(client_id: str):
+    """
+    Get visit statistics for a specific client.
+    
+    Args:
+        client_id (str): Unique identifier for the client
+        
+    Returns:
+        JSON response with visit counts per area
+    """
+    if request.method == 'OPTIONS':
+        return add_cors_headers(make_response('', HTTP_NO_CONTENT))
+    
+    try:
+        if not os.path.exists(APPOINTMENTS_CSV_FILENAME):
+            return create_success_response({'stats': {}})
+
+        stats = {}
+        with open(APPOINTMENTS_CSV_FILENAME, mode='r', newline='', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                if row['client_id'] == client_id and row['confirmed'].strip().lower() == 'yes':
+                    area = row['area'].strip().lower()
+                    if area:
+                        if area not in stats:
+                            stats[area] = 0
+                        stats[area] += 1
+        
+        return create_success_response({'stats': stats})
+
+    except Exception as exc:
+        return create_error_response(f'Failed to retrieve client stats: {str(exc)}', HTTP_INTERNAL_SERVER_ERROR)
+
+
 @app.route('/clients/<client_id>', methods=['PUT', 'OPTIONS'])
 def update_client(client_id: str):
     """
