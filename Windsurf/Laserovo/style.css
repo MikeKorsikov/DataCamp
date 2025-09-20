@@ -1236,3 +1236,9 @@ label small {
     color: #10b981;
     font-weight: 500;
 }
+
+/* Overdue next visit (in the past) */
+.stats-list .next-visit.overdue {
+    color: #dc2626; /* red-600 */
+    font-weight: 700;
+}

@@ -44,7 +44,21 @@ const CONFIG = {
         { area_id: 8, area: 'full-body', recommended_procedures: 8 },
         { area_id: 9, area: 'head', recommended_procedures: 8 },
         { area_id: 10, area: 'belly', recommended_procedures: 6 }
-    ]
+    ],
+    // Minimum waiting periods between sessions (in weeks) for the same treatment zone
+    // Session 1 is initial; subsequent sessions require a minimum wait after the previous session
+    SESSION_WAIT: {
+        1: { label: 'Initial session', min_weeks_after_previous: 0 },
+        2: { min_weeks_after_previous: 4 },
+        3: { min_weeks_after_previous: 6 },
+        4: { min_weeks_after_previous: 8 },
+        5: { min_weeks_after_previous: 10 },
+        6: { min_weeks_after_previous: 12 },
+        7: { min_weeks_after_previous: 14 },
+        8: { min_weeks_after_previous: 16 },
+        9: { min_weeks_after_previous: 18 },
+        10: { min_weeks_after_previous: 20 }
+    }
 };
 
 // =============================================================================
@@ -679,17 +693,36 @@ class ClientManager extends BaseManager {
             // Set client name in the modal
             document.getElementById('client-stats-name').textContent = `${client.name} ${client.surname}`;
 
-            // Build areas with counts and last visit
+            // Build areas with counts, last visit and next visit estimation
             const treatmentAreas = CONFIG.AREAS.map(cfg => {
                 const key = cfg.area.toLowerCase();
                 const name = cfg.area.charAt(0).toUpperCase() + cfg.area.slice(1);
                 const visits = stats[key] || 0;
                 const lastRaw = lastVisits[key] || '';
                 let lastDisplay = '';
+                let nextDisplay = '';
+                let nextOverdue = false;
                 if (lastRaw) {
                     const dt = new Date(lastRaw);
                     if (!isNaN(dt.getTime())) {
                         lastDisplay = dt.toLocaleDateString('en-GB', CONFIG.DATE_FORMAT_OPTIONS);
+                        // Determine next session number and required wait (in weeks)
+                        const nextSession = (visits || 0) + 1;
+                        const waitCfg = CONFIG.SESSION_WAIT && CONFIG.SESSION_WAIT[nextSession];
+                        const weeks = waitCfg && typeof waitCfg.min_weeks_after_previous === 'number' ? waitCfg.min_weeks_after_previous : null;
+                        if (weeks !== null) {
+                            const nextDt = new Date(dt);
+                            nextDt.setDate(nextDt.getDate() + (weeks * 7));
+                            if (!isNaN(nextDt.getTime())) {
+                                nextDisplay = nextDt.toLocaleDateString('en-GB', CONFIG.DATE_FORMAT_OPTIONS);
+                                // Mark overdue if next visit date is earlier than today
+                                const today = new Date();
+                                // Compare by date only (ignore time) to avoid timezone surprises
+                                const nextDateOnly = new Date(nextDt.getFullYear(), nextDt.getMonth(), nextDt.getDate());
+                                const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                                nextOverdue = nextDateOnly < todayDateOnly;
+                            }
+                        }
                     }
                 }
                 return {
@@ -697,6 +730,8 @@ class ClientManager extends BaseManager {
                     name,
                     visits,
                     lastDisplay,
+                    nextDisplay,
+                    nextOverdue,
                     recommendedProcedures: cfg.recommended_procedures
                 };
             });
@@ -716,7 +751,7 @@ class ClientManager extends BaseManager {
                     <span class="visits">${area.visits}</span>
                     <span class="recommended">${area.recommendedProcedures}</span>
                     <span class="last-visit">${area.lastDisplay}</span>
-                    <span class="next-visit"></span>
+                    <span class="next-visit ${area.nextOverdue ? 'overdue' : ''}">${area.nextDisplay || ''}</span>
                 `;
                 treatmentList.appendChild(li);
             });
