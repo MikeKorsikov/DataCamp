@@ -147,37 +147,60 @@ body {
     padding: 0 20px 20px 20px; /* ensure buttons are spaced from modal edges */
 }
 
+/* Normalize ALL modal action buttons: size, typography, shape */
+.modal .modal-actions button {
+    /* Visual style: match 'Cancel' */
+    background: #f3f4f6 !important;
+    color: #374151 !important;
+    border: 1px solid #d1d5db !important;
+
+    /* Sizing & shape normalization */
+    padding: 10px 16px !important;
+    border-radius: 8px !important;
+    font-size: 0.95rem !important;
+    line-height: 1.35 !important;
+    min-height: 40px !important;
+    box-sizing: border-box !important;
+}
+
+/* Hover matches Cancel hover */
+.modal .modal-actions button:hover {
+    background: #e5e7eb !important;
+    color: #374151 !important;
+    border-color: #9ca3af !important;
+}
+
+/* Ensure any previously styled 'primary' buttons in modal actions also conform */
+.modal .modal-actions #client-save,
+.modal .modal-actions #appointment-save,
+.modal .modal-actions #edit-appointment-save,
+.modal .modal-actions .edit-btn,
+.modal .modal-actions .stats-btn {
+    background: #f3f4f6 !important;
+    color: #374151 !important;
+    border: 1px solid #d1d5db !important;
+    padding: 10px 16px !important;
+    border-radius: 8px !important;
+    font-size: 0.95rem !important;
+    line-height: 1.35 !important;
+    min-height: 40px !important;
+    box-sizing: border-box !important;
+}
+
+.modal .modal-actions #client-save:hover,
+.modal .modal-actions #appointment-save:hover,
+.modal .modal-actions #edit-appointment-save:hover,
+.modal .modal-actions .edit-btn:hover,
+.modal .modal-actions .stats-btn:hover {
+    background: #e5e7eb !important;
+    color: #374151 !important;
+    border-color: #9ca3af !important;
+}
+
+/* Remove implicit conflicts: base .modal-actions button previously set border: none;
+   Our more specific selector above overrides it, but we also normalize here for safety */
 .modal-actions button {
-    padding: 10px 16px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-}
-
-.modal-actions #client-save {
-    background: #111827;
-    color: #ffffff;
-}
-
-.modal-actions #client-save:hover { background: #1f2937; }
-
-.modal-actions .secondary {
-    background: #e5e7eb;
-    color: #111827;
-}
-
-.modal-actions .secondary:hover { background: #d1d5db; }
-
-@media (max-width: 768px) {
-    .form-grid { grid-template-columns: 1fr; }
-    .search-controls {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-    .search-controls button[type="submit"] {
-        width: 100%;
-        margin-top: 4px;
-    }
+    border: 1px solid transparent; /* will be overridden inside .modal by rules above */
 }
 
 /* Search modal styles */
