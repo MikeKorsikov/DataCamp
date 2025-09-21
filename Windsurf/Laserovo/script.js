@@ -651,8 +651,14 @@ class ClientManager extends BaseManager {
                 showAllList.appendChild(headerElement);
             }
             
+            // Sort clients by Name (A→Z), then Surname
+            const sortedClients = [...response.results].sort((a, b) => {
+                const n = (a.name || '').localeCompare(b.name || '');
+                return n !== 0 ? n : (a.surname || '').localeCompare(b.surname || '');
+            });
+            
             // Create client rows
-            for (const client of response.results) {
+            for (const client of sortedClients) {
                 const clientElement = createElement('div', 'show-all-clients-row', `
                     <div class="show-all-cell">${client.name || 'N/A'}</div>
                     <div class="show-all-cell">${client.surname || 'N/A'}</div>
@@ -1141,29 +1147,25 @@ class AppointmentManager extends BaseManager {
         `);
         resultsList.appendChild(headerElement);
         
-        // Process appointments and fetch client data
-        for (const appointment of appointments) {
+        // Also fetch clients to map names for sorting by Name (A→Z)
+        const clientsResp = await apiRequest('/clients');
+        const clientById = new Map((clientsResp.results || []).map(c => [c.id, c]));
+        
+        // Sort by client's Name (A→Z), then Surname
+        const sortedAppointments = [...appointments].sort((a, b) => {
+            const ca = clientById.get(a.client_id) || {}; 
+            const cb = clientById.get(b.client_id) || {};
+            const n = (ca.name || '').localeCompare(cb.name || '');
+            return n !== 0 ? n : (ca.surname || '').localeCompare(cb.surname || '');
+        });
+        
+        // Create appointment rows (use existing rendering expectations)
+        for (const appointment of sortedAppointments) {
+            const client = clientById.get(appointment.client_id) || { name: 'N/A', surname: 'N/A' };
             const { date, time } = formatDateTime(appointment.appointment_datetime);
-            
-            // Fetch client data
-            let clientName = 'Unknown';
-            let clientSurname = 'Client';
-            
-            if (appointment.client_id) {
-                try {
-                    const clientResponse = await apiRequest(`/clients/${appointment.client_id}`);
-                    if (clientResponse.client) {
-                        clientName = clientResponse.client.name || 'Unknown';
-                        clientSurname = clientResponse.client.surname || 'Client';
-                    }
-                } catch (error) {
-                    console.warn('Failed to fetch client data:', error);
-                }
-            }
-            
             const appointmentElement = createElement('div', 'appointment-results-row', `
-                <div class="appointment-cell">${clientName}</div>
-                <div class="appointment-cell">${clientSurname}</div>
+                <div class="appointment-cell">${client.name}</div>
+                <div class="appointment-cell">${client.surname}</div>
                 <div class="appointment-cell">${appointment.area || 'N/A'}</div>
                 <div class="appointment-cell">${appointment.procedure_number || '1'}</div>
                 <div class="appointment-cell">${date}</div>
@@ -1172,10 +1174,7 @@ class AppointmentManager extends BaseManager {
                     <button class="edit-appointment-btn" data-appointment-id="${appointment.visit_id}">Edit</button>
                 </div>
             `);
-            
-            if (appointmentElement) {
-                resultsList.appendChild(appointmentElement);
-            }
+            if (appointmentElement) resultsList.appendChild(appointmentElement);
         }
     }
     
@@ -1381,51 +1380,46 @@ class AppointmentManager extends BaseManager {
                 return;
             }
             
+            // Also fetch clients to map names for sorting by Name (A→Z)
+            const clientsResp = await apiRequest('/clients');
+            const clientById = new Map((clientsResp.results || []).map(c => [c.id, c]));
+            
             // Create table header
             const headerElement = createElement('div', 'show-all-appointments-header', `
                 <div class="show-all-header-cell">Name</div>
                 <div class="show-all-header-cell">Surname</div>
                 <div class="show-all-header-cell">Area</div>
+                <div class="show-all-header-cell">Procedure #</div>
                 <div class="show-all-header-cell">Date</div>
                 <div class="show-all-header-cell">Time</div>
                 <div class="show-all-header-cell">Action</div>
             `);
-            appointmentsList.appendChild(headerElement);
+            if (headerElement) appointmentsList.appendChild(headerElement);
             
-            // Process appointments sequentially to fetch client data
-            for (const appointment of response.results) {
+            // Sort by client's Name (A→Z), then Surname
+            const sortedAppointments = [...response.results].sort((a, b) => {
+                const ca = clientById.get(a.client_id) || {}; 
+                const cb = clientById.get(b.client_id) || {};
+                const n = (ca.name || '').localeCompare(cb.name || '');
+                return n !== 0 ? n : (ca.surname || '').localeCompare(cb.surname || '');
+            });
+            
+            // Create appointment rows (use existing rendering expectations)
+            for (const appointment of sortedAppointments) {
+                const client = clientById.get(appointment.client_id) || { name: 'N/A', surname: 'N/A' };
                 const { date, time } = formatDateTime(appointment.appointment_datetime);
-                
-                // Fetch client data
-                let clientName = 'Unknown';
-                let clientSurname = 'Client';
-                
-                if (appointment.client_id) {
-                    try {
-                        const clientResponse = await apiRequest(`/clients/${appointment.client_id}`);
-                        if (clientResponse.client) {
-                            clientName = clientResponse.client.name || 'Unknown';
-                            clientSurname = clientResponse.client.surname || 'Client';
-                        }
-                    } catch (error) {
-                        console.warn('Failed to fetch client data:', error);
-                    }
-                }
-                
                 const appointmentElement = createElement('div', 'show-all-appointments-row', `
-                    <div class="show-all-cell">${clientName}</div>
-                    <div class="show-all-cell">${clientSurname}</div>
+                    <div class="show-all-cell">${client.name}</div>
+                    <div class="show-all-cell">${client.surname}</div>
                     <div class="show-all-cell">${appointment.area || 'N/A'}</div>
+                    <div class="show-all-cell">${appointment.procedure_number || '1'}</div>
                     <div class="show-all-cell">${date}</div>
                     <div class="show-all-cell">${time}</div>
                     <div class="show-all-cell">
                         <button class="edit-appointment-btn" data-appointment-id="${appointment.visit_id}">Edit</button>
                     </div>
                 `);
-                
-                if (appointmentElement) {
-                    appointmentsList.appendChild(appointmentElement);
-                }
+                if (appointmentElement) appointmentsList.appendChild(appointmentElement);
             }
             
         } catch (error) {
@@ -1586,12 +1580,12 @@ class AppointmentManager extends BaseManager {
                 rows = rows.filter(r => !!r.lastVisit);
             }
 
-            // Sort alphabetically by Surname, then Name, then Area
+            // Sort by Name (A→Z), then Surname, then Area
             rows.sort((a, b) => {
-                const s = a.surname.localeCompare(b.surname);
-                if (s !== 0) return s;
                 const n = a.name.localeCompare(b.name);
                 if (n !== 0) return n;
+                const s = a.surname.localeCompare(b.surname);
+                if (s !== 0) return s;
                 return a.area.localeCompare(b.area);
             });
 

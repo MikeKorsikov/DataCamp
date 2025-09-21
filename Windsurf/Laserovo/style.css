@@ -133,6 +133,8 @@ body {
     border-radius: 8px;
     font-size: 1rem;
     font-family: sans-serif;
+    box-sizing: border-box;
+    margin: 0;
 }
 
 .modal-actions {
@@ -798,6 +800,7 @@ label small {
     max-height: 90vh;
     display: flex;
     flex-direction: column;
+    max-width: 1000px; /* widen to fit all columns comfortably */
 }
 
 #show-all-appointments-modal-overlay .modal-body {
@@ -814,7 +817,7 @@ label small {
 /* Show All appointments table styling */
 .show-all-appointments-header {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto;
+    grid-template-columns: repeat(6, 1fr) auto; /* Name, Surname, Area, Procedure #, Date, Time, Action */
     gap: 12px;
     padding: 12px 20px;
     background: #f3f4f6;
@@ -833,13 +836,13 @@ label small {
     text-align: left;
 }
 
-.show-all-header-cell:last-child {
-    text-align: center;
+.show-all-header-cell:last-child { /* Action column */
+    text-align: right;
 }
 
 .show-all-appointments-row {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto;
+    grid-template-columns: repeat(6, 1fr) auto; /* align with header */
     gap: 12px;
     padding: 12px 20px;
     background: #ffffff;
@@ -858,27 +861,8 @@ label small {
     color: #374151;
 }
 
-.show-all-cell:last-child {
-    justify-content: center;
-}
-
-/* Scrollbar styling for Show All modal */
-#show-all-appointments-modal-overlay .modal-body::-webkit-scrollbar {
-    width: 8px;
-}
-
-#show-all-appointments-modal-overlay .modal-body::-webkit-scrollbar-track {
-    background: #f1f5f9;
-    border-radius: 4px;
-}
-
-#show-all-appointments-modal-overlay .modal-body::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 4px;
-}
-
-#show-all-appointments-modal-overlay .modal-body::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+.show-all-cell:last-child { /* Action cell */
+    justify-content: flex-end; /* push Edit button to the far right */
 }
 
 /* Appointment Modal Form Sections */
