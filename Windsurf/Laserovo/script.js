@@ -804,6 +804,7 @@ class AppointmentManager extends BaseManager {
         this.initializeMakeAppointment();
         this.initializeFindAppointment();
         this.initializeShowAllAppointments();
+        this.initializeUpcomingAppointments();
     }
     
     /**
@@ -1440,6 +1441,121 @@ class AppointmentManager extends BaseManager {
         modalManager.close();
         // TODO: Implement drill-down functionality
         // This could open a detailed appointment view or edit modal
+    }
+
+    /**
+     * Initialize upcoming appointments modal open/close behavior
+     */
+    initializeUpcomingAppointments() {
+        const button = document.getElementById('upcoming-appointments');
+        const modal = document.getElementById('upcoming-appointments-modal-overlay');
+        const cancelButton = document.getElementById('upcoming-appointments-cancel');
+        const tableBody = document.querySelector('#upcoming-appointments-table tbody');
+
+        this.setupModalListeners({
+            button, modal, cancelButton,
+            openCallback: () => {
+                this.loadUniqueAppointmentClients();
+            },
+            closeCallback: () => {
+                if (tableBody) tableBody.innerHTML = '';
+            }
+        });
+    }
+
+    /**
+     * Load unique client-area pairs found in appointments (past and/or future).
+     * Render columns: Name, Surname, Area, Last Visit, Procedure #.
+     */
+    async loadUniqueAppointmentClients() {
+        const tbody = document.querySelector('#upcoming-appointments-table tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        try {
+            const [appointmentsResp, clientsResp] = await Promise.all([
+                apiRequest('/appointments'),
+                apiRequest('/clients')
+            ]);
+
+            const appointments = Array.isArray(appointmentsResp.results) ? appointmentsResp.results : [];
+            const clients = Array.isArray(clientsResp.results) ? clientsResp.results : [];
+
+            // Map clients by id for quick lookup
+            const clientById = new Map(clients.map(c => [c.id, c]));
+
+            // Collect unique (client_id, area) pairs from appointments
+            const pairSet = new Set(
+                appointments
+                    .filter(a => a && a.client_id && a.area)
+                    .map(a => `${a.client_id}||${a.area}`)
+            );
+
+            const now = new Date();
+
+            // Build rows with name, surname, area, last visit date (<= today) and its procedure_number
+            const rows = Array.from(pairSet).map(key => {
+                const [clientId, area] = key.split('||');
+                const client = clientById.get(clientId) || { name: '', surname: '' };
+
+                // Find latest past (<= now) appointment for this client and area
+                const lastPast = appointments
+                    .filter(a => a.client_id === clientId && a.area === area && a.appointment_datetime)
+                    .map(a => ({ a, dt: new Date(a.appointment_datetime) }))
+                    .filter(({ dt }) => !isNaN(dt.getTime()) && dt <= now)
+                    .sort((x, y) => y.dt - x.dt)[0];
+
+                const lastVisit = lastPast
+                    ? lastPast.dt.toLocaleDateString('en-GB', CONFIG.DATE_FORMAT_OPTIONS)
+                    : '';
+                const procedureNumber = lastPast && lastPast.a && lastPast.a.procedure_number
+                    ? lastPast.a.procedure_number
+                    : '';
+
+                return {
+                    name: client.name || '',
+                    surname: client.surname || '',
+                    area: area || '',
+                    lastVisit,
+                    procedure: procedureNumber
+                };
+            });
+
+            // Sort alphabetically by Surname, then Name, then Area
+            rows.sort((a, b) => {
+                const s = a.surname.localeCompare(b.surname);
+                if (s !== 0) return s;
+                const n = a.name.localeCompare(b.name);
+                if (n !== 0) return n;
+                return a.area.localeCompare(b.area);
+            });
+
+            // Render rows
+            if (rows.length === 0) {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.colSpan = 5;
+                td.textContent = 'No appointment records found.';
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+                return;
+            }
+
+            for (const r of rows) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${r.name}</td>
+                    <td>${r.surname}</td>
+                    <td>${r.area}</td>
+                    <td>${r.lastVisit}</td>
+                    <td>${r.procedure}</td>
+                `;
+                tbody.appendChild(tr);
+            }
+
+        } catch (error) {
+            showError('Failed to load upcoming appointments.', error);
+        }
     }
 }
 

@@ -1279,3 +1279,46 @@ label small {
     align-items: center;
     gap: 8px;
 }
+
+/* Upcoming Appointments modal table centering */
+#upcoming-appointments-modal-overlay .modal {
+    max-width: 960px; /* give a bit more room for columns */
+}
+
+#upcoming-appointments-modal-overlay .table-wrapper {
+    overflow-x: auto;
+}
+
+#upcoming-appointments-modal-overlay #upcoming-appointments-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#upcoming-appointments-modal-overlay #upcoming-appointments-table thead th,
+#upcoming-appointments-modal-overlay #upcoming-appointments-table tbody td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 10px 12px;
+}
+
+#upcoming-appointments-modal-overlay #upcoming-appointments-table thead th {
+    background: #f3f4f6;
+    color: #374151;
+    font-weight: 600;
+}
+
+#upcoming-appointments-modal-overlay #upcoming-appointments-table tbody tr:nth-child(odd) {
+    background-color: #ffffff;
+}
+
+#upcoming-appointments-modal-overlay #upcoming-appointments-table tbody tr:nth-child(even) {
+    background-color: #f9fafb;
+}
+
+#upcoming-appointments-modal-overlay #upcoming-appointments-table tbody tr:hover {
+    background-color: #eef2ff; /* subtle hover highlight */
+}
+
+#upcoming-appointments-modal-overlay #upcoming-appointments-table tbody tr + tr {
+    border-top: 1px solid #e5e7eb;
+}

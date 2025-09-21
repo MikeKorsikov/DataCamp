@@ -14,6 +14,7 @@
             <button id="make-appointment">Make appointment</button>
             <button id="find-appointment">Find appointment</button>
             <button id="show-all">Show all</button>
+            <button id="upcoming-appointments">Upcoming appointments</button>
         </div>
         <button onclick="location.href='index.html'">Back to Home</button>
     </main>
@@ -222,6 +223,36 @@
             </div>
             <div class="modal-actions">
                 <button type="button" id="show-all-appointments-cancel" class="secondary">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Upcoming Appointments Modal -->
+    <div class="modal-overlay" id="upcoming-appointments-modal-overlay" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="upcoming-appointments-title">
+            <div class="modal-header">
+                <h2 id="upcoming-appointments-title">Upcoming Appointments</h2>
+            </div>
+            <div class="modal-body">
+                <div class="table-wrapper">
+                    <table class="data-table" id="upcoming-appointments-table" style="width:100%; border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Surname</th>
+                                <th>Area</th>
+                                <th>Last Visit</th>
+                                <th>Procedure #</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Rows will be dynamically loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-actions" style="justify-content: flex-end;">
+                <button type="button" id="upcoming-appointments-cancel" class="secondary">Close</button>
             </div>
         </div>
     </div>
