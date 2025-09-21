@@ -142,6 +142,11 @@ body {
     margin-top: 18px;
 }
 
+/* Global spacing for modal actions across all windows */
+.modal .modal-actions {
+    padding: 0 20px 20px 20px; /* ensure buttons are spaced from modal edges */
+}
+
 .modal-actions button {
     padding: 10px 16px;
     border-radius: 8px;
@@ -1321,4 +1326,15 @@ label small {
 
 #upcoming-appointments-modal-overlay #upcoming-appointments-table tbody tr + tr {
     border-top: 1px solid #e5e7eb;
+}
+
+/* Overdue next visit styling for Upcoming Appointments */
+#upcoming-appointments-modal-overlay .next-visit.overdue {
+    color: #dc2626; /* red-600 */
+    font-weight: 700;
+}
+
+/* Ensure buttons are spaced from the view edges in Upcoming Appointments modal */
+#upcoming-appointments-modal-overlay .modal-actions {
+    padding: 0 20px 20px 20px; /* right/left/bottom padding for edge spacing */
 }

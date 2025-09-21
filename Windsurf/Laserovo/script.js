@@ -1451,6 +1451,9 @@ class AppointmentManager extends BaseManager {
         const modal = document.getElementById('upcoming-appointments-modal-overlay');
         const cancelButton = document.getElementById('upcoming-appointments-cancel');
         const tableBody = document.querySelector('#upcoming-appointments-table tbody');
+        const next7Button = document.getElementById('upcoming-appointments-next7');
+        const next30Button = document.getElementById('upcoming-appointments-next30');
+        const clearButton = document.getElementById('upcoming-appointments-clear');
 
         this.setupModalListeners({
             button, modal, cancelButton,
@@ -1461,13 +1464,34 @@ class AppointmentManager extends BaseManager {
                 if (tableBody) tableBody.innerHTML = '';
             }
         });
+
+        // Filter for next 7 days
+        if (next7Button) {
+            next7Button.addEventListener('click', () => {
+                this.loadUniqueAppointmentClients({ days: 7 });
+            });
+        }
+
+        // Filter for next 30 days
+        if (next30Button) {
+            next30Button.addEventListener('click', () => {
+                this.loadUniqueAppointmentClients({ days: 30 });
+            });
+        }
+
+        // Clear filter
+        if (clearButton) {
+            clearButton.addEventListener('click', () => {
+                this.loadUniqueAppointmentClients();
+            });
+        }
     }
 
     /**
      * Load unique client-area pairs found in appointments (past and/or future).
-     * Render columns: Name, Surname, Area, Last Visit, Procedure #.
+     * Render columns: Name, Surname, Area, Last Visit, Procedure #, Next Visit.
      */
-    async loadUniqueAppointmentClients() {
+    async loadUniqueAppointmentClients(options = {}) {
         const tbody = document.querySelector('#upcoming-appointments-table tbody');
         if (!tbody) return;
         tbody.innerHTML = '';
@@ -1492,15 +1516,19 @@ class AppointmentManager extends BaseManager {
             );
 
             const now = new Date();
+            const todayDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const windowDays = typeof options.days === 'number' ? options.days : null;
+            const maxDateOnly = windowDays !== null ? new Date(todayDateOnly) : null;
+            if (maxDateOnly) maxDateOnly.setDate(maxDateOnly.getDate() + windowDays);
 
             // Build rows with name, surname, area, last visit date (<= today) and its procedure_number
-            const rows = Array.from(pairSet).map(key => {
+            let rows = Array.from(pairSet).map(key => {
                 const [clientId, area] = key.split('||');
                 const client = clientById.get(clientId) || { name: '', surname: '' };
 
-                // Find latest past (<= now) appointment for this client and area
+                // Find latest past (<= now) CONFIRMED appointment for this client and area
                 const lastPast = appointments
-                    .filter(a => a.client_id === clientId && a.area === area && a.appointment_datetime)
+                    .filter(a => a.client_id === clientId && a.area === area && a.appointment_datetime && a.confirmed === 'yes')
                     .map(a => ({ a, dt: new Date(a.appointment_datetime) }))
                     .filter(({ dt }) => !isNaN(dt.getTime()) && dt <= now)
                     .sort((x, y) => y.dt - x.dt)[0];
@@ -1512,14 +1540,51 @@ class AppointmentManager extends BaseManager {
                     ? lastPast.a.procedure_number
                     : '';
 
+                // Compute Next Visit using SESSION_WAIT rules based on next session after last procedure
+                let nextVisit = '';
+                let nextOverdue = false;
+                let nextDateOnlyTs = null;
+                if (lastPast && procedureNumber !== '') {
+                    const procNum = Number(procedureNumber);
+                    if (!Number.isNaN(procNum)) {
+                        const nextSession = procNum + 1;
+                        const waitCfg = CONFIG.SESSION_WAIT && CONFIG.SESSION_WAIT[nextSession];
+                        const weeks = waitCfg && typeof waitCfg.min_weeks_after_previous === 'number' ? waitCfg.min_weeks_after_previous : null;
+                        if (weeks !== null) {
+                            const nextDt = new Date(lastPast.dt);
+                            nextDt.setDate(nextDt.getDate() + weeks * 7);
+                            if (!isNaN(nextDt.getTime())) {
+                                nextVisit = nextDt.toLocaleDateString('en-GB', CONFIG.DATE_FORMAT_OPTIONS);
+                                // Compare date-only to mark overdue
+                                const nextDateOnly = new Date(nextDt.getFullYear(), nextDt.getMonth(), nextDt.getDate());
+                                nextDateOnlyTs = nextDateOnly.getTime();
+                                nextOverdue = nextDateOnly < todayDateOnly;
+                            }
+                        }
+                    }
+                }
+
                 return {
                     name: client.name || '',
                     surname: client.surname || '',
                     area: area || '',
                     lastVisit,
-                    procedure: procedureNumber
+                    procedure: procedureNumber,
+                    nextVisit,
+                    nextOverdue,
+                    _nextDateOnlyTs: nextDateOnlyTs
                 };
             });
+
+            // Optional filter: only show rows with Next Visit within [today, today + days]
+            if (windowDays !== null) {
+                const minTs = todayDateOnly.getTime();
+                const maxTs = maxDateOnly.getTime();
+                rows = rows.filter(r => typeof r._nextDateOnlyTs === 'number' && r._nextDateOnlyTs >= minTs && r._nextDateOnlyTs <= maxTs);
+            } else {
+                // Default view: exclude rows with blank Last Visit
+                rows = rows.filter(r => !!r.lastVisit);
+            }
 
             // Sort alphabetically by Surname, then Name, then Area
             rows.sort((a, b) => {
@@ -1534,7 +1599,7 @@ class AppointmentManager extends BaseManager {
             if (rows.length === 0) {
                 const tr = document.createElement('tr');
                 const td = document.createElement('td');
-                td.colSpan = 5;
+                td.colSpan = 6;
                 td.textContent = 'No appointment records found.';
                 tr.appendChild(td);
                 tbody.appendChild(tr);
@@ -1549,6 +1614,7 @@ class AppointmentManager extends BaseManager {
                     <td>${r.area}</td>
                     <td>${r.lastVisit}</td>
                     <td>${r.procedure}</td>
+                    <td><span class="next-visit ${r.nextOverdue ? 'overdue' : ''}">${r.nextVisit}</span></td>
                 `;
                 tbody.appendChild(tr);
             }
