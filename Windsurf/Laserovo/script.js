@@ -1144,6 +1144,7 @@ class AppointmentManager extends BaseManager {
             <div class="appointment-header-cell">Date</div>
             <div class="appointment-header-cell">Time</div>
             <div class="appointment-header-cell">Action</div>
+            <div class="appointment-header-cell">Reminder</div>
         `);
         resultsList.appendChild(headerElement);
         
@@ -1172,6 +1173,9 @@ class AppointmentManager extends BaseManager {
                 <div class="appointment-cell">${time}</div>
                 <div class="appointment-cell">
                     <button class="edit-appointment-btn" data-appointment-id="${appointment.visit_id}">Edit</button>
+                </div>
+                <div class="appointment-cell">
+                    <button class="send-sms-btn" type="button">Send SMS</button>
                 </div>
             `);
             if (appointmentElement) resultsList.appendChild(appointmentElement);
@@ -1609,6 +1613,9 @@ class AppointmentManager extends BaseManager {
                     <td>${r.lastVisit}</td>
                     <td>${r.procedure}</td>
                     <td><span class="next-visit ${r.nextOverdue ? 'overdue' : ''}">${r.nextVisit}</span></td>
+                    <td>
+                        <button class="send-sms-btn" type="button">Send SMS</button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             }
