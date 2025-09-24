@@ -1334,13 +1334,41 @@ label small {
     }
 }
 
-/* Upcoming Appointments modal table centering */
+/* Upcoming Appointments modal styling */
 #upcoming-appointments-modal-overlay .modal {
-    max-width: 960px; /* give a bit more room for columns */
+    max-width: 960px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#upcoming-appointments-modal-overlay .modal-body {
+    overflow-y: auto;
+    max-height: calc(90vh - 150px); /* Account for header and actions */
+    padding: 20px;
 }
 
 #upcoming-appointments-modal-overlay .table-wrapper {
     overflow-x: auto;
+    min-height: 100px;
+}
+
+#upcoming-appointments-modal-overlay .modal-header {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+#upcoming-appointments-modal-overlay .modal-actions {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    z-index: 10;
+    box-shadow: 0 -2px 4px rgba(0,0,0,0.05);
+    padding: 15px 20px;
+    margin: 0;
 }
 
 #upcoming-appointments-modal-overlay #upcoming-appointments-table {
@@ -1370,7 +1398,9 @@ label small {
 }
 
 #upcoming-appointments-modal-overlay #upcoming-appointments-table tbody tr:hover {
-    background-color: #eef2ff; /* subtle hover highlight */
+    background-color: #eef2ff;
+    position: relative;
+    z-index: 2;
 }
 
 #upcoming-appointments-modal-overlay #upcoming-appointments-table tbody tr + tr {
