@@ -46,7 +46,7 @@ END
 sleep 3
 
 # Open the app in default browser
-open "http://127.0.0.1:5000/"
+open "http://127.0.0.1:5001/"
 
 echo "Laserovo is now running in your default web browser."
 echo "To stop the server, close the Terminal window where it's running."

@@ -29,7 +29,7 @@ call .venv\Scripts\activate
 
 start "Laserovo Server" cmd /c %PYTHON_CMD% server.py
 timeout /t 2 >nul
-start "Laserovo App" http://127.0.0.1:5000/
+start "Laserovo App" http://127.0.0.1:5001/
 
 endlocal
 

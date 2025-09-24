@@ -724,7 +724,7 @@ if __name__ == '__main__':
     In production, use a WSGI server like Gunicorn.
     """
     print("Starting Laserovo Laser Hair Removal Management System...")
-    print("Server will be available at: http://127.0.0.1:5000")
+    print("Server will be available at: http://127.0.0.1:5001")
     print("Press Ctrl+C to stop the server")
     
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    app.run(host='127.0.0.1', port=5001, debug=True)
