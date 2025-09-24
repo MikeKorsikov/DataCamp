@@ -166,24 +166,26 @@
     <div class="modal-overlay" id="stats-modal-overlay" hidden>
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="stats-modal-title">
             <div class="modal-header">
-                <h2 id="stats-modal-title">Client Statistics:</h2>
+                <h2 id="stats-modal-title">Client Statistics</h2>
             </div>
             <div class="modal-body">
                 <div id="client-stats-header">
                     <h3 id="client-stats-name"></h3>
                 </div>
                 <div id="client-stats-content">
-                    <div class="stats-header">
-                        <span class="area-header">Area</span>
-                        <span class="visits-header">Actual Visits</span>
-                        <span class="procedure-header">Procedure #</span>
-                        <span class="progress-header">Progress</span>
-                        <span class="last-visit-header">Last Visit</span>
-                        <span class="next-visit-header">Next Visit</span>
+                    <div class="stats-scroll-container">
+                        <div class="stats-header">
+                            <span class="area-header">Area</span>
+                            <span class="visits-header">Visits</span>
+                            <span class="procedure-header">Procedure #</span>
+                            <span class="recommended-header">Progress</span>
+                            <span class="last-visit-header">Last Visit</span>
+                            <span class="next-visit-header">Next Visit</span>
+                        </div>
+                        <ul id="treatment-areas-list" class="stats-list">
+                            <!-- Treatment areas will be populated here -->
+                        </ul>
                     </div>
-                    <ul id="treatment-areas-list" class="stats-list">
-                        <!-- Treatment areas will be populated here -->
-                    </ul>
                 </div>
                 <div class="modal-actions">
                     <button type="button" id="stats-close" class="secondary">Close</button>
