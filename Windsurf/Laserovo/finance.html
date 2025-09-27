@@ -7,13 +7,41 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <main style="max-width:1000px;margin:40px auto;padding:20px;">
+    <main class="finance-main">
         <h1>Finance Management</h1>
-        <p>Placeholder page for tracking finances and payments.</p>
-        <button onclick="location.href='index.html'">Back to Home</button>
+        <p>Page for tracking finances and payments.</p>
+        
+        <div class="finance-actions">
+            <!-- Expenses Section -->
+            <section class="finance-section">
+                <h2>Expenses</h2>
+                <div class="finance-actions-grid">
+                    <button>Add Expense</button>
+                    <button>Expense Report</button>
+                    <button>Expense Forecast</button>
+                </div>
+            </section>
+            
+            <!-- Revenue Section -->
+            <section class="finance-section">
+                <h2>Revenue</h2>
+                <div class="finance-actions-grid">
+                    <button>Revenue Report</button>
+                    <button>Revenue Forecast</button>
+                </div>
+            </section>
+            
+            <!-- Income Statement Section -->
+            <section class="finance-section">
+                <h2>Income Statement</h2>
+                <div class="finance-actions-grid">
+                    <button>P&L Report</button>
+                </div>
+            </section>
+        </div>
+        
+        <button class="back-button" onclick="location.href='index.html'">Back to Home</button>
     </main>
     <script src="script.js"></script>
 </body>
 </html>
-
-

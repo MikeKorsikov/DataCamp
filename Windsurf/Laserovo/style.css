@@ -1153,6 +1153,76 @@ label small {
     background: #94a3b8;
 }
 
+/* Finance Page Styles */
+.finance-main {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+.finance-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+}
+
+.finance-section {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.finance-section h2 {
+    margin: 0 0 16px 0;
+    font-size: 1.25rem;
+    color: #111827;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.finance-actions-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.finance-actions-grid button {
+    width: 100%;
+    padding: 12px 16px;
+    background-color: #111827;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.2s ease;
+}
+
+.finance-actions-grid button:hover {
+    background-color: #1f2937;
+}
+
+.back-button {
+    margin-top: 24px;
+    padding: 10px 20px;
+    background-color: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.back-button:hover {
+    background-color: #e5e7eb;
+    border-color: #9ca3af;
+}
+
 /* Client Statistics Modal */
 #stats-modal-overlay .modal {
     max-width: 95vw;
