@@ -97,47 +97,75 @@
             </div>
             <div class="modal-body">
                 <div class="revenue-filters" style="margin-bottom: 20px;">
-                    <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 15px;">
+                    <div style="display: flex; gap: 15px; align-items: flex-end; margin-bottom: 15px;">
                         <div>
-                            <label for="revenue-period" style="display: block; margin-bottom: 5px; font-weight: 500;">Period</label>
-                            <select id="revenue-period" class="form-select" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #d1d5db; width: 200px;">
-                                <option value="this_month">This Month</option>
-                                <option value="last_month">Last Month</option>
-                                <option value="this_quarter">This Quarter</option>
-                                <option value="last_quarter">Last Quarter</option>
-                                <option value="this_year">This Year</option>
-                                <option value="custom">Custom Range</option>
+                            <label for="revenue-month" style="display: block; margin-bottom: 5px; font-weight: 500;">Month</label>
+                            <select id="revenue-month" class="form-select" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #d1d5db; width: 150px;">
+                                <option value="">All Months</option>
+                                <option value="0">January</option>
+                                <option value="1">February</option>
+                                <option value="2">March</option>
+                                <option value="3">April</option>
+                                <option value="4">May</option>
+                                <option value="5">June</option>
+                                <option value="6">July</option>
+                                <option value="7">August</option>
+                                <option value="8">September</option>
+                                <option value="9">October</option>
+                                <option value="10">November</option>
+                                <option value="11">December</option>
                             </select>
                         </div>
-                        <div id="custom-date-range" style="display: none; gap: 10px; align-items: flex-end;">
-                            <div>
-                                <label style="display: block; margin-bottom: 5px; font-weight: 500;">From</label>
-                                <input type="date" id="date-from" class="form-input" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #d1d5db;">
-                            </div>
-                            <div>
-                                <label style="display: block; margin-bottom: 5px; font-weight: 500;">To</label>
-                                <input type="date" id="date-to" class="form-input" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #d1d5db;">
-                            </div>
+                        <div>
+                            <label for="revenue-year" style="display: block; margin-bottom: 5px; font-weight: 500;">Year</label>
+                            <select id="revenue-year" class="form-select" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #d1d5db; width: 120px;">
+                                <option value="">All Years</option>
+                                <option value="2023">2023</option>
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button id="update-revenue-report" class="primary-button" style="background: #111827; color: #ffffff; border: none; border-radius: 8px; padding: 10px 16px; cursor: pointer; font-size: 1rem; height: 40px; font-family: sans-serif; align-self: flex-end;">
+                                Update
+                            </button>
                         </div>
                     </div>
                 </div>
                 <div class="revenue-table-container" style="overflow-x: auto;">
-                    <table class="revenue-table" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                    <table class="revenue-table" style="width: 100%; border-collapse: collapse; margin-bottom: 20px; border-radius: 8px; overflow: hidden;">
+                        <colgroup>
+                            <col style="width: 30%;">
+                            <col style="width: 17.5%;">
+                            <col style="width: 17.5%;">
+                            <col style="width: 17.5%;">
+                            <col style="width: 17.5%;">
+                        </colgroup>
                         <thead>
                             <tr style="background-color: #f3f4f6;">
                                 <th style="padding: 12px; text-align: left; border-bottom: 2px solid #d1d5db; font-weight: 600; text-transform: capitalize;">Treatment Zone</th>
-                                <th style="padding: 12px; text-align: right; border-bottom: 2px solid #d1d5db; font-weight: 600;"># of Procedures</th>
-                                <th style="padding: 12px; text-align: right; border-bottom: 2px solid #d1d5db; font-weight: 600;">PLN</th>
+                                <th colspan="2" style="padding: 12px; text-align: center; border-bottom: 2px solid #d1d5db; font-weight: 600; background-color: #e5e7eb;">Procedures</th>
+                                <th colspan="2" style="padding: 12px; text-align: center; border-bottom: 2px solid #d1d5db; font-weight: 600; background-color: #e5e7eb;">Revenue</th>
+                            </tr>
+                            <tr style="background-color: #f9fafb;">
+                                <th style="padding: 8px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-weight: 500; font-size: 0.9rem;"></th>
+                                <th style="padding: 8px 12px; text-align: right; border-bottom: 1px solid #e5e7eb; font-weight: 500; font-size: 0.9rem;">Count</th>
+                                <th style="padding: 8px 12px; text-align: right; border-bottom: 1px solid #e5e7eb; font-weight: 500; font-size: 0.9rem;">% of Total</th>
+                                <th style="padding: 8px 12px; text-align: right; border-bottom: 1px solid #e5e7eb; font-weight: 500; font-size: 0.9rem; border-left: 1px solid #e5e7eb;">Amount (PLN)</th>
+                                <th style="padding: 8px 12px; text-align: right; border-bottom: 1px solid #e5e7eb; font-weight: 500; font-size: 0.9rem;">% of Total</th>
                             </tr>
                         </thead>
                         <tbody id="revenue-table-body">
                             <!-- Rows will be populated by JavaScript -->
                         </tbody>
                         <tfoot>
-                            <tr style="background-color: #f9fafb; font-weight: 600;">
-                                <td style="padding: 12px; text-align: left; border-top: 2px solid #d1d5db;">Total</td>
-                                <td id="total-procedures" style="padding: 12px; text-align: right; border-top: 2px solid #d1d5db;">0</td>
-                                <td id="total-revenue" style="padding: 12px; text-align: right; border-top: 2px solid #d1d5db;">0.00</td>
+                            <tr style="background-color: #f1f5f9; font-weight: 600; border-top: 2px solid #d1d5db;">
+                                <td style="padding: 12px; text-align: left; border-right: 1px solid #d1d5db;">Total</td>
+                                <td id="total-procedures" style="padding: 12px; text-align: right; background-color: #e2e8f0;">0</td>
+                                <td style="padding: 12px; text-align: right; background-color: #e2e8f0; border-right: 1px solid #d1d5db;">100.0%</td>
+                                <td id="total-revenue" style="padding: 12px; text-align: right; background-color: #e2e8f0; border-left: 1px solid #d1d5db;">0.00</td>
+                                <td style="padding: 12px; text-align: right; background-color: #e2e8f0;">100.0%</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -204,6 +232,10 @@
                     const csvData = await response.text();
                     const lines = csvData.split('\n').slice(1); // Skip header row
                     
+                    // Get selected month and year
+                    const selectedMonth = document.getElementById('revenue-month').value;
+                    const selectedYear = document.getElementById('revenue-year').value;
+                    
                     // Initialize revenue object with all areas from CONFIG
                     const revenueByZone = {};
                     CONFIG.AREAS.forEach(area => {
@@ -223,6 +255,17 @@
                         
                         // Skip if amount_pln is empty or not a number
                         if (!amountPln || isNaN(parseFloat(amountPln))) return;
+                        
+                        // Parse appointment date
+                        const appointmentDate = new Date(appointmentDatetime);
+                        const appointmentMonth = appointmentDate.getMonth().toString();
+                        const appointmentYear = appointmentDate.getFullYear().toString();
+                        
+                        // Skip if doesn't match selected month filter (if any month is selected)
+                        if (selectedMonth && selectedMonth !== '' && appointmentMonth !== selectedMonth) return;
+                        
+                        // Skip if doesn't match selected year filter (if any year is selected)
+                        if (selectedYear && selectedYear !== '' && appointmentYear !== selectedYear) return;
                         
                         const amount = parseFloat(amountPln);
                         
@@ -253,20 +296,34 @@
                 
                 // Clear existing rows
                 tbody.innerHTML = '';
-                
                 // Add rows for each treatment zone
-                areas.forEach(zone => {
+                areas.forEach((zone, index) => {
                     const row = document.createElement('tr');
                     row.style.borderBottom = '1px solid #e5e7eb';
+                    row.style.backgroundColor = index % 2 === 0 ? '#ffffff' : '#f9fafb';
+                    
+                    const procedurePercent = zone.procedures > 0 ? 
+                        (zone.procedures / areas.reduce((sum, z) => sum + z.procedures, 0) * 100).toFixed(1) + '%' : '0.0%';
+                    const revenuePercent = zone.revenue > 0 ? 
+                        (zone.revenue / areas.reduce((sum, z) => sum + z.revenue, 0) * 100).toFixed(1) + '%' : '0.0%';
+                    
                     row.innerHTML = `
-                        <td style="padding: 12px; text-align: left;">${zone.displayName}</td>
-                        <td style="padding: 12px; text-align: right;">${zone.procedures}</td>
-                        <td style="padding: 12px; text-align: right;">${zone.revenue.toFixed(2)}</td>
+                        <td style="padding: 12px; text-align: left; border-right: 1px solid #e5e7eb;">${zone.displayName}</td>
+                        <td style="padding: 12px; text-align: right; background-color: #f8fafc;">${zone.procedures}</td>
+                        <td style="padding: 12px; text-align: right; background-color: #f8fafc; border-right: 1px solid #e5e7eb;">
+                            <span style="color: #4b5563; font-size: 0.9em;">${procedurePercent}</span>
+                        </td>
+                        <td style="padding: 12px; text-align: right; background-color: #f8fafc; border-left: 1px solid #e5e7eb;">
+                            ${zone.revenue.toFixed(2)}
+                        </td>
+                        <td style="padding: 12px; text-align: right; background-color: #f8fafc;">
+                            <span style="color: #4b5563; font-size: 0.9em;">${revenuePercent}</span>
+                        </td>
                     `;
                     tbody.appendChild(row);
                 });
 
-                // Update totals (in a real app, this would come from the server)
+                // Update totals
                 updateRevenueTotals(areas);
 
                 // Period selector change handler
@@ -289,8 +346,16 @@
                 document.getElementById('total-revenue').textContent = totalRevenue.toFixed(2);
             }
 
+            // Set default selected month and year
+            const currentDate = new Date();
+            document.getElementById('revenue-month').value = currentDate.getMonth().toString();
+            document.getElementById('revenue-year').value = currentDate.getFullYear().toString();
+            
             // Call initRevenueReport when the page loads
             initRevenueReport();
+            
+            // Add event listener for the Update button
+            document.getElementById('update-revenue-report').addEventListener('click', initRevenueReport);
 
             // Modal configuration
             const modals = [
