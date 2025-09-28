@@ -144,7 +144,6 @@
                 </div>
             </div>
             <div class="modal-actions">
-                <button id="export-revenue" class="secondary-button" style="margin-right: auto;">Export to Excel</button>
                 <button id="revenue-report-cancel" class="secondary-button">Close</button>
             </div>
         </div>
@@ -200,18 +199,12 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize Revenue Report
             function initRevenueReport() {
-                const areas = [
-                    { area: 'Face', procedures: 0, revenue: 0 },
-                    { area: 'Underarms', procedures: 0, revenue: 0 },
-                    { area: 'Arms', procedures: 0, revenue: 0 },
-                    { area: 'Legs', procedures: 0, revenue: 0 },
-                    { area: 'Bikini', procedures: 0, revenue: 0 },
-                    { area: 'Back', procedures: 0, revenue: 0 },
-                    { area: 'Chest', procedures: 0, revenue: 0 },
-                    { area: 'Full Body', procedures: 0, revenue: 0 },
-                    { area: 'Head', procedures: 0, revenue: 0 },
-                    { area: 'Belly', procedures: 0, revenue: 0 }
-                ];
+                // Use CONFIG.AREAS to dynamically generate areas array
+                const areas = CONFIG.AREAS.map(area => ({
+                    area: area.area.charAt(0).toUpperCase() + area.area.slice(1).replace('-', ' '), // Format area name nicely
+                    procedures: 0,
+                    revenue: 0
+                }));
 
                 const tbody = document.getElementById('revenue-table-body');
                 
@@ -241,12 +234,6 @@
                     // In a real app, you would fetch data for the selected period
                     // For now, we'll just update the display
                     console.log('Selected period:', period);
-                });
-
-                // Export button handler
-                document.getElementById('export-revenue').addEventListener('click', function() {
-                    alert('Export functionality would be implemented here');
-                    // In a real app, this would generate and download an Excel/CSV file
                 });
             }
 
