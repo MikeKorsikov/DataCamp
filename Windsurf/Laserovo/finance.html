@@ -197,14 +197,57 @@
     <script src="script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Calculate revenue by treatment zone from appointments data
+            async function calculateRevenueByZone() {
+                try {
+                    const response = await fetch('appointments.csv');
+                    const csvData = await response.text();
+                    const lines = csvData.split('\n').slice(1); // Skip header row
+                    
+                    // Initialize revenue object with all areas from CONFIG
+                    const revenueByZone = {};
+                    CONFIG.AREAS.forEach(area => {
+                        const formattedArea = area.area.charAt(0).toUpperCase() + area.area.slice(1).replace('-', ' ');
+                        revenueByZone[area.area] = {
+                            displayName: formattedArea,
+                            procedures: 0,
+                            revenue: 0
+                        };
+                    });
+                    
+                    // Process each appointment
+                    lines.forEach(line => {
+                        if (!line.trim()) return; // Skip empty lines
+                        
+                        const [visitId, clientId, procedureNumber, appointmentDatetime, area, power, confirmed, amountPln, createdAt] = line.split(',');
+                        
+                        // Skip if amount_pln is empty or not a number
+                        if (!amountPln || isNaN(parseFloat(amountPln))) return;
+                        
+                        const amount = parseFloat(amountPln);
+                        
+                        // Update revenue and procedure count for the area
+                        if (revenueByZone[area]) {
+                            revenueByZone[area].procedures += 1;
+                            revenueByZone[area].revenue += amount;
+                        }
+                    });
+                    
+                    // Convert to array and sort by revenue (highest first)
+                    return Object.values(revenueByZone)
+                        .filter(zone => zone.procedures > 0) // Only include zones with procedures
+                        .sort((a, b) => b.revenue - a.revenue);
+                        
+                } catch (error) {
+                    console.error('Error calculating revenue by zone:', error);
+                    return [];
+                }
+            }
+
             // Initialize Revenue Report
-            function initRevenueReport() {
-                // Use CONFIG.AREAS to dynamically generate areas array
-                const areas = CONFIG.AREAS.map(area => ({
-                    area: area.area.charAt(0).toUpperCase() + area.area.slice(1).replace('-', ' '), // Format area name nicely
-                    procedures: 0,
-                    revenue: 0
-                }));
+            async function initRevenueReport() {
+                // Get revenue data from appointments
+                const areas = await calculateRevenueByZone();
 
                 const tbody = document.getElementById('revenue-table-body');
                 
@@ -216,7 +259,7 @@
                     const row = document.createElement('tr');
                     row.style.borderBottom = '1px solid #e5e7eb';
                     row.innerHTML = `
-                        <td style="padding: 12px; text-align: left;">${zone.area}</td>
+                        <td style="padding: 12px; text-align: left;">${zone.displayName}</td>
                         <td style="padding: 12px; text-align: right;">${zone.procedures}</td>
                         <td style="padding: 12px; text-align: right;">${zone.revenue.toFixed(2)}</td>
                     `;
