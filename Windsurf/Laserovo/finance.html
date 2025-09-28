@@ -36,12 +36,306 @@
                 <h2>Income Statement</h2>
                 <div class="finance-actions-grid">
                     <button>P&L Report</button>
+                    <button>P&L Forecast</button>
                 </div>
             </section>
         </div>
         
         <button class="back-button" onclick="location.href='index.html'">Back to Home</button>
     </main>
+    <!-- Add Expense Modal -->
+    <div class="modal-overlay" id="add-expense-modal-overlay" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="add-expense-modal-title">
+            <div class="modal-header">
+                <h2 id="add-expense-modal-title">Add Expense</h2>
+            </div>
+            <div class="modal-body">
+                <p>Add expense form will be displayed here.</p>
+            </div>
+            <div class="modal-actions">
+                <button id="add-expense-cancel" class="secondary-button">Cancel</button>
+                <button id="add-expense-submit" class="primary-button">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expense Report Modal -->
+    <div class="modal-overlay" id="expense-report-modal-overlay" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="expense-report-modal-title">
+            <div class="modal-header">
+                <h2 id="expense-report-modal-title">Expense Report</h2>
+            </div>
+            <div class="modal-body">
+                <p>Expense report content will be displayed here.</p>
+            </div>
+            <div class="modal-actions">
+                <button id="expense-report-cancel" class="secondary-button">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expense Forecast Modal -->
+    <div class="modal-overlay" id="expense-forecast-modal-overlay" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="expense-forecast-modal-title">
+            <div class="modal-header">
+                <h2 id="expense-forecast-modal-title">Expense Forecast</h2>
+            </div>
+            <div class="modal-body">
+                <p>Expense forecast content will be displayed here.</p>
+            </div>
+            <div class="modal-actions">
+                <button id="expense-forecast-cancel" class="secondary-button">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue Report Modal -->
+    <div class="modal-overlay" id="revenue-report-modal-overlay" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="revenue-report-modal-title" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 id="revenue-report-modal-title">Revenue Report</h2>
+            </div>
+            <div class="modal-body">
+                <div class="revenue-filters" style="margin-bottom: 20px;">
+                    <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 15px;">
+                        <div>
+                            <label for="revenue-period" style="display: block; margin-bottom: 5px; font-weight: 500;">Period</label>
+                            <select id="revenue-period" class="form-select" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #d1d5db; width: 200px;">
+                                <option value="this_month">This Month</option>
+                                <option value="last_month">Last Month</option>
+                                <option value="this_quarter">This Quarter</option>
+                                <option value="last_quarter">Last Quarter</option>
+                                <option value="this_year">This Year</option>
+                                <option value="custom">Custom Range</option>
+                            </select>
+                        </div>
+                        <div id="custom-date-range" style="display: none; gap: 10px; align-items: flex-end;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 500;">From</label>
+                                <input type="date" id="date-from" class="form-input" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #d1d5db;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 500;">To</label>
+                                <input type="date" id="date-to" class="form-input" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #d1d5db;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="revenue-table-container" style="overflow-x: auto;">
+                    <table class="revenue-table" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <thead>
+                            <tr style="background-color: #f3f4f6;">
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #d1d5db; font-weight: 600; text-transform: capitalize;">Treatment Zone</th>
+                                <th style="padding: 12px; text-align: right; border-bottom: 2px solid #d1d5db; font-weight: 600;"># of Procedures</th>
+                                <th style="padding: 12px; text-align: right; border-bottom: 2px solid #d1d5db; font-weight: 600;">PLN</th>
+                            </tr>
+                        </thead>
+                        <tbody id="revenue-table-body">
+                            <!-- Rows will be populated by JavaScript -->
+                        </tbody>
+                        <tfoot>
+                            <tr style="background-color: #f9fafb; font-weight: 600;">
+                                <td style="padding: 12px; text-align: left; border-top: 2px solid #d1d5db;">Total</td>
+                                <td id="total-procedures" style="padding: 12px; text-align: right; border-top: 2px solid #d1d5db;">0</td>
+                                <td id="total-revenue" style="padding: 12px; text-align: right; border-top: 2px solid #d1d5db;">0.00</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button id="export-revenue" class="secondary-button" style="margin-right: auto;">Export to Excel</button>
+                <button id="revenue-report-cancel" class="secondary-button">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue Forecast Modal -->
+    <div class="modal-overlay" id="revenue-forecast-modal-overlay" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="revenue-forecast-modal-title">
+            <div class="modal-header">
+                <h2 id="revenue-forecast-modal-title">Revenue Forecast</h2>
+            </div>
+            <div class="modal-body">
+                <p>Revenue forecast content will be displayed here.</p>
+            </div>
+            <div class="modal-actions">
+                <button id="revenue-forecast-cancel" class="secondary-button">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- P&L Report Modal -->
+    <div class="modal-overlay" id="pl-report-modal-overlay" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="pl-report-modal-title">
+            <div class="modal-header">
+                <h2 id="pl-report-modal-title">P&L Report</h2>
+            </div>
+            <div class="modal-body">
+                <p>Profit and Loss report content will be displayed here.</p>
+            </div>
+            <div class="modal-actions">
+                <button id="pl-report-cancel" class="secondary-button">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- P&L Forecast Modal -->
+    <div class="modal-overlay" id="pl-forecast-modal-overlay" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="pl-forecast-modal-title">
+            <div class="modal-header">
+                <h2 id="pl-forecast-modal-title">P&L Forecast</h2>
+            </div>
+            <div class="modal-body">
+                <p>Profit and Loss forecast content will be displayed here.</p>
+            </div>
+            <div class="modal-actions">
+                <button id="pl-forecast-cancel" class="secondary-button">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Revenue Report
+            function initRevenueReport() {
+                const areas = [
+                    { area: 'Face', procedures: 0, revenue: 0 },
+                    { area: 'Underarms', procedures: 0, revenue: 0 },
+                    { area: 'Arms', procedures: 0, revenue: 0 },
+                    { area: 'Legs', procedures: 0, revenue: 0 },
+                    { area: 'Bikini', procedures: 0, revenue: 0 },
+                    { area: 'Back', procedures: 0, revenue: 0 },
+                    { area: 'Chest', procedures: 0, revenue: 0 },
+                    { area: 'Full Body', procedures: 0, revenue: 0 },
+                    { area: 'Head', procedures: 0, revenue: 0 },
+                    { area: 'Belly', procedures: 0, revenue: 0 }
+                ];
+
+                const tbody = document.getElementById('revenue-table-body');
+                
+                // Clear existing rows
+                tbody.innerHTML = '';
+                
+                // Add rows for each treatment zone
+                areas.forEach(zone => {
+                    const row = document.createElement('tr');
+                    row.style.borderBottom = '1px solid #e5e7eb';
+                    row.innerHTML = `
+                        <td style="padding: 12px; text-align: left;">${zone.area}</td>
+                        <td style="padding: 12px; text-align: right;">${zone.procedures}</td>
+                        <td style="padding: 12px; text-align: right;">${zone.revenue.toFixed(2)}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                // Update totals (in a real app, this would come from the server)
+                updateRevenueTotals(areas);
+
+                // Period selector change handler
+                document.getElementById('revenue-period').addEventListener('change', function() {
+                    const period = this.value;
+                    const customRange = document.getElementById('custom-date-range');
+                    customRange.style.display = period === 'custom' ? 'flex' : 'none';
+                    // In a real app, you would fetch data for the selected period
+                    // For now, we'll just update the display
+                    console.log('Selected period:', period);
+                });
+
+                // Export button handler
+                document.getElementById('export-revenue').addEventListener('click', function() {
+                    alert('Export functionality would be implemented here');
+                    // In a real app, this would generate and download an Excel/CSV file
+                });
+            }
+
+            // Helper function to update revenue totals
+            function updateRevenueTotals(areas) {
+                const totalProcedures = areas.reduce((sum, zone) => sum + zone.procedures, 0);
+                const totalRevenue = areas.reduce((sum, zone) => sum + zone.revenue, 0);
+                
+                document.getElementById('total-procedures').textContent = totalProcedures;
+                document.getElementById('total-revenue').textContent = totalRevenue.toFixed(2);
+            }
+
+            // Call initRevenueReport when the page loads
+            initRevenueReport();
+
+            // Modal configuration
+            const modals = [
+                {
+                    button: document.querySelector('.finance-section:nth-child(1) .finance-actions-grid button:nth-child(1)'),
+                    modal: document.getElementById('add-expense-modal-overlay'),
+                    cancel: document.getElementById('add-expense-cancel')
+                },
+                {
+                    button: document.querySelector('.finance-section:nth-child(1) .finance-actions-grid button:nth-child(2)'),
+                    modal: document.getElementById('expense-report-modal-overlay'),
+                    cancel: document.getElementById('expense-report-cancel')
+                },
+                {
+                    button: document.querySelector('.finance-section:nth-child(1) .finance-actions-grid button:nth-child(3)'),
+                    modal: document.getElementById('expense-forecast-modal-overlay'),
+                    cancel: document.getElementById('expense-forecast-cancel')
+                },
+                {
+                    button: document.querySelector('.finance-section:nth-child(2) .finance-actions-grid button:nth-child(1)'),
+                    modal: document.getElementById('revenue-report-modal-overlay'),
+                    cancel: document.getElementById('revenue-report-cancel')
+                },
+                {
+                    button: document.querySelector('.finance-section:nth-child(2) .finance-actions-grid button:nth-child(2)'),
+                    modal: document.getElementById('revenue-forecast-modal-overlay'),
+                    cancel: document.getElementById('revenue-forecast-cancel')
+                },
+                {
+                    button: document.querySelector('.finance-section:nth-child(3) .finance-actions-grid button:nth-child(1)'),
+                    modal: document.getElementById('pl-report-modal-overlay'),
+                    cancel: document.getElementById('pl-report-cancel')
+                },
+                {
+                    button: document.querySelector('.finance-section:nth-child(3) .finance-actions-grid button:nth-child(2)'),
+                    modal: document.getElementById('pl-forecast-modal-overlay'),
+                    cancel: document.getElementById('pl-forecast-cancel')
+                }
+            ];
+
+            // Initialize all modals
+            modals.forEach(({ button, modal, cancel }) => {
+                if (!button || !modal) return;
+
+                // Open modal when button is clicked
+                button.addEventListener('click', () => {
+                    modal.removeAttribute('hidden');
+                });
+
+                // Close modal when cancel button is clicked
+                if (cancel) {
+                    cancel.addEventListener('click', () => {
+                        modal.setAttribute('hidden', '');
+                    });
+                }
+
+                // Close modal when clicking outside the modal content
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.setAttribute('hidden', '');
+                    }
+                });
+            });
+
+            // Close modals with Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    modals.forEach(({ modal }) => {
+                        if (modal && !modal.hasAttribute('hidden')) {
+                            modal.setAttribute('hidden', '');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>
