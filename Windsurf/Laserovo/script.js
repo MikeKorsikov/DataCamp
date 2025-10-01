@@ -34,7 +34,7 @@ const CONFIG = {
         hour12: false 
     },
     AREAS: [
-        { area_id: 1, area: 'face', recommended_procedures: 10 },
+        { area_id: 1, area: 'face', recommended_procedures: 9 },
         { area_id: 2, area: 'underarms', recommended_procedures: 10 },
         { area_id: 3, area: 'arms', recommended_procedures: 10 },
         { area_id: 4, area: 'legs', recommended_procedures: 10 },
