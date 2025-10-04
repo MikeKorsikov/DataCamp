@@ -65,7 +65,69 @@
                 <h2 id="expense-report-modal-title">Expense Report</h2>
             </div>
             <div class="modal-body">
-                <p>Expense report content will be displayed here.</p>
+                <div class="expense-filters" style="margin-bottom: 20px;">
+                    <div style="display: flex; gap: 15px; align-items: flex-end; margin-bottom: 15px;">
+                        <div>
+                            <label for="expense-month" style="display: block; margin-bottom: 5px; font-weight: 500;">Month</label>
+                            <select id="expense-month" class="form-select" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #d1d5db; width: 150px;">
+                                <option value="">All Months</option>
+                                <option value="0">January</option>
+                                <option value="1">February</option>
+                                <option value="2">March</option>
+                                <option value="3">April</option>
+                                <option value="4">May</option>
+                                <option value="5">June</option>
+                                <option value="6">July</option>
+                                <option value="7">August</option>
+                                <option value="8">September</option>
+                                <option value="9">October</option>
+                                <option value="10">November</option>
+                                <option value="11">December</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="expense-year" style="display: block; margin-bottom: 5px; font-weight: 500;">Year</label>
+                            <select id="expense-year" class="form-select" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #d1d5db; width: 120px;">
+                                <option value="">All Years</option>
+                                <option value="2023">2023</option>
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button id="update-expense-report" class="primary-button" style="background: #111827; color: #ffffff; border: none; border-radius: 8px; padding: 10px 16px; cursor: pointer; font-size: 1rem; height: 40px; font-family: sans-serif; align-self: flex-end;">
+                                Update
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="expense-table-container" style="overflow-x: auto;">
+                    <table class="expense-table" style="width: 100%; border-collapse: collapse; margin-bottom: 20px; border-radius: 8px; overflow: hidden;">
+                        <colgroup>
+                            <col style="width: 60%;">
+                            <col style="width: 20%;">
+                            <col style="width: 20%;">
+                        </colgroup>
+                        <thead>
+                            <tr style="background-color: #f3f4f6;">
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #d1d5db; font-weight: 600;">Expense Category</th>
+                                <th style="padding: 12px; text-align: right; border-bottom: 2px solid #d1d5db; font-weight: 600;">Quantity</th>
+                                <th style="padding: 12px; text-align: right; border-bottom: 2px solid #d1d5db; font-weight: 600;">Amount (PLN)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expense-report-body">
+                            <!-- Rows will be populated by JavaScript -->
+                        </tbody>
+                        <tfoot>
+                            <tr style="background-color: #f1f5f9; font-weight: 600; border-top: 2px solid #d1d5db;">
+                                <td style="padding: 12px; text-align: left;">Total</td>
+                                <td id="total-quantity" style="padding: 12px; text-align: right; background-color: #e2e8f0;">0</td>
+                                <td id="total-amount" style="padding: 12px; text-align: right; background-color: #e2e8f0;">0.00</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
             </div>
             <div class="modal-actions">
                 <button id="expense-report-cancel" class="secondary-button">Close</button>
@@ -345,6 +407,47 @@
                 document.getElementById('total-revenue').textContent = totalRevenue.toFixed(2);
             }
 
+            // Initialize Expense Report
+            function initExpenseReport() {
+                const tbody = document.getElementById('expense-report-body');
+                if (!tbody) return;
+                
+                // Clear existing rows
+                tbody.innerHTML = '';
+                
+                // Add rows for each expense category
+                CONFIG.EXPENSES.forEach((expense, index) => {
+                    const row = document.createElement('tr');
+                    row.style.borderBottom = '1px solid #e5e7eb';
+                    row.style.backgroundColor = index % 2 === 0 ? '#ffffff' : '#f9fafb';
+                    
+                    row.innerHTML = `
+                        <td style="padding: 12px; text-align: left;">${expense.expense_category}</td>
+                        <td style="padding: 12px; text-align: right;">0</td>
+                        <td style="padding: 12px; text-align: right;">0.00</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+                // Set default selected month and year
+                const currentDate = new Date();
+                if (document.getElementById('expense-month')) {
+                    document.getElementById('expense-month').value = currentDate.getMonth().toString();
+                    document.getElementById('expense-year').value = currentDate.getFullYear().toString();
+                }
+                
+                // Add event listener for the Update button
+                const updateButton = document.getElementById('update-expense-report');
+                if (updateButton) {
+                    updateButton.addEventListener('click', function() {
+                        const month = document.getElementById('expense-month').value;
+                        const year = document.getElementById('expense-year').value;
+                        console.log('Updating expense report for:', year, month ? parseInt(month) + 1 : 'All months');
+                        // In a real app, you would fetch data for the selected period here
+                    });
+                }
+            }
+            
             // Set default selected month and year for reports
             const currentDate = new Date();
             if (document.getElementById('revenue-month')) {
@@ -358,6 +461,9 @@
             
             // Call initRevenueReport when the page loads
             initRevenueReport();
+            
+            // Initialize expense report when the page loads
+            initExpenseReport();
             
             // Add event listener for the Update button
             document.getElementById('update-revenue-report').addEventListener('click', initRevenueReport);

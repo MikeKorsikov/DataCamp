@@ -49,11 +49,12 @@ const CONFIG = {
     EXPENSES: [
         { expense_id: 1, expense_category: 'Rent', description: 'Monthly rent payment' },
         { expense_id: 2, expense_category: 'Accounting services', description: 'Monthly accounting services' },
-        { expense_id: 3, expense_category: 'Marketing', description: 'Ad hoc marketing and advertising' },
-        { expense_id: 4, expense_category: 'Insurance', description: 'Insurance payments' },
-        { expense_id: 5, expense_category: 'Taxes', description: 'Taxes payments' },
-        { expense_id: 6, expense_category: 'Social security', description: 'Social security ZUS payments' },
-        { expense_id: 7, expense_category: 'Panthenol', description: 'Panthenol' },
+        { expense_id: 3, expense_category: 'Ultrasound gel', description: 'Ultrasound gel' },
+        { expense_id: 4, expense_category: 'Marketing', description: 'Ad hoc marketing and advertising' },
+        { expense_id: 5, expense_category: 'Insurance', description: 'Insurance payments' },
+        { expense_id: 6, expense_category: 'Taxes', description: 'Taxes payments' },
+        { expense_id: 7, expense_category: 'Social security', description: 'Social security ZUS payments' },
+        { expense_id: 8, expense_category: 'Panthenol', description: 'Panthenol' },
         { expense_id: 8, expense_category: 'Maintenance', description: 'Maintenance for lazer' }
     ],
     // Minimum waiting periods between sessions (in weeks) for the same treatment zone
