@@ -407,27 +407,146 @@
                 document.getElementById('total-revenue').textContent = totalRevenue.toFixed(2);
             }
 
+            // Function to parse CSV data
+            function parseCSV(csvText) {
+                const lines = csvText.split('\n').filter(line => line.trim() !== '');
+                if (lines.length === 0) return [];
+                
+                // Extract headers and clean them
+                const headers = lines[0].split(',').map(h => h.trim());
+                
+                // Process data rows
+                return lines.slice(1).map(line => {
+                    const values = [];
+                    let current = '';
+                    let inQuotes = false;
+                    
+                    for (let i = 0; i < line.length; i++) {
+                        const char = line[i];
+                        if (char === '"') {
+                            inQuotes = !inQuotes;
+                        } else if (char === ',' && !inQuotes) {
+                            values.push(current.trim());
+                            current = '';
+                        } else {
+                            current += char;
+                        }
+                    }
+                    values.push(current.trim());
+                    
+                    // Create an object with the row data
+                    const row = {};
+                    headers.forEach((header, index) => {
+                        row[header] = values[index] || '';
+                    });
+                    return row;
+                });
+            }
+
+            // Helper function to check if a date is within the selected period
+            function isDateInPeriod(dateString, selectedMonth, selectedYear) {
+                if (!dateString) return false;
+                
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return false;
+                
+                const month = date.getMonth();
+                const year = date.getFullYear();
+                
+                // If year is selected and doesn't match, return false
+                if (selectedYear && selectedYear !== '' && parseInt(selectedYear) !== year) {
+                    return false;
+                }
+                
+                // If month is selected and doesn't match, return false
+                if (selectedMonth && selectedMonth !== '' && parseInt(selectedMonth) !== month) {
+                    return false;
+                }
+                
+                return true;
+            }
+
             // Initialize Expense Report
-            function initExpenseReport() {
+            async function initExpenseReport() {
                 const tbody = document.getElementById('expense-report-body');
                 if (!tbody) return;
                 
-                // Clear existing rows
-                tbody.innerHTML = '';
-                
-                // Add rows for each expense category
-                CONFIG.EXPENSES.forEach((expense, index) => {
-                    const row = document.createElement('tr');
-                    row.style.borderBottom = '1px solid #e5e7eb';
-                    row.style.backgroundColor = index % 2 === 0 ? '#ffffff' : '#f9fafb';
+                try {
+                    // Get selected period
+                    const selectedMonth = document.getElementById('expense-month')?.value;
+                    const selectedYear = document.getElementById('expense-year')?.value;
                     
-                    row.innerHTML = `
-                        <td style="padding: 12px; text-align: left;">${expense.expense_category}</td>
-                        <td style="padding: 12px; text-align: right;">0</td>
-                        <td style="padding: 12px; text-align: right;">0.00</td>
-                    `;
-                    tbody.appendChild(row);
-                });
+                    // Fetch and parse the expenses data
+                    const response = await fetch('expenses.csv');
+                    const csvData = await response.text();
+                    let expenses = parseCSV(csvData);
+                    
+                    // Filter expenses by selected period
+                    expenses = expenses.filter(expense => {
+                        return isDateInPeriod(expense.expense_date, selectedMonth, selectedYear);
+                    });
+                    
+                    // Calculate total quantity and amount for each category
+                    const categoryData = {};
+                    
+                    expenses.forEach(expense => {
+                        const category = expense.expense_category.trim();
+                        const quantity = parseFloat(expense.quantity) || 0;
+                        const amount = parseFloat(expense.expense_amount) || 0;
+                        
+                        if (!categoryData[category]) {
+                            categoryData[category] = { quantity: 0, amount: 0 };
+                        }
+                        categoryData[category].quantity += quantity;
+                        categoryData[category].amount += amount;
+                    });
+                    
+                    // Clear existing rows
+                    tbody.innerHTML = '';
+                    let totalQuantity = 0;
+                    let totalAmount = 0;
+                    
+                    // Add rows for each expense category
+                    CONFIG.EXPENSES.forEach((expense, index) => {
+                        const category = expense.expense_category;
+                        const quantity = categoryData[category]?.quantity || 0;
+                        const amount = categoryData[category]?.amount || 0;
+                        
+                        totalQuantity += quantity;
+                        totalAmount += amount;
+                        
+                        const row = document.createElement('tr');
+                        row.style.borderBottom = '1px solid #e5e7eb';
+                        row.style.backgroundColor = index % 2 === 0 ? '#ffffff' : '#f9fafb';
+                        
+                        row.innerHTML = `
+                            <td style="padding: 12px; text-align: left;">${category}</td>
+                            <td style="padding: 12px; text-align: right;">${quantity}</td>
+                            <td style="padding: 12px; text-align: right;">${amount.toFixed(2)}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                    
+                    // Update the totals in the footer
+                    document.getElementById('total-quantity').textContent = totalQuantity;
+                    document.getElementById('total-amount').textContent = totalAmount.toFixed(2);
+                    
+                } catch (error) {
+                    console.error('Error loading expenses data:', error);
+                    // Fallback to showing 0 quantities if there's an error
+                    CONFIG.EXPENSES.forEach((expense, index) => {
+                        const row = document.createElement('tr');
+                        row.style.borderBottom = '1px solid #e5e7eb';
+                        row.style.backgroundColor = index % 2 === 0 ? '#ffffff' : '#f9fafb';
+                        
+                        row.innerHTML = `
+                            <td style="padding: 12px; text-align: left;">${expense.expense_category}</td>
+                            <td style="padding: 12px; text-align: right;">0</td>
+                            <td style="padding: 12px; text-align: right;">0.00</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                }
                 
                 // Set default selected month and year
                 const currentDate = new Date();
@@ -444,6 +563,7 @@
                         const year = document.getElementById('expense-year').value;
                         console.log('Updating expense report for:', year, month ? parseInt(month) + 1 : 'All months');
                         // In a real app, you would fetch data for the selected period here
+                        initExpenseReport(); // Refresh the report with the selected period
                     });
                 }
             }
