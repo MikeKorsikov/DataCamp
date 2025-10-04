@@ -1,2 +1,2 @@
-expense_unique_id, expense_date, expense_amount, quantity, expense_category, tax_deductible, payment_method
-1, 2025-01-01, 100, 1, Rent, yes, bank transfer
+expense_unique_id, expense_date, expense_amount, quantity, expense_category, tax_deductible, payment_method, expense_notes
+1, 2025-01-01, 100, 1, Rent, yes, bank transfer, "Advance for Feb rent"

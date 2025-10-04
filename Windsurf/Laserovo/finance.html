@@ -48,13 +48,74 @@
             <div class="modal-header">
                 <h2 id="add-expense-modal-title">Add Expense</h2>
             </div>
-            <div class="modal-body">
-                <p>Add expense form will be displayed here.</p>
-            </div>
-            <div class="modal-actions">
-                <button id="add-expense-cancel" class="secondary-button">Cancel</button>
-                <button id="add-expense-submit" class="primary-button">Save</button>
-            </div>
+            <form id="add-expense-form" class="modal-body">
+                <!-- Expense Details Section -->
+                <div class="form-section">
+                    <h3>Expense Details</h3>
+                    <div class="form-grid">
+                        <label>
+                            <span>Date <span class="required">*</span></span>
+                            <input type="date" id="expense-date" name="expense_date" required>
+                        </label>
+                        
+                        <label>
+                            <span>Amount (PLN) <span class="required">*</span></span>
+                            <input type="number" id="expense-amount" name="expense_amount" step="0.01" min="0" required>
+                        </label>
+                        
+                        <label>
+                            <span>Quantity <span class="required">*</span></span>
+                            <input type="number" id="expense-quantity" name="quantity" min="1" value="1" required>
+                        </label>
+                        
+                        <label>
+                            <span>Payment Method <span class="required">*</span></span>
+                            <select id="payment-method" name="payment_method" required>
+                                <option value="" disabled selected>Select payment method</option>
+                                <option value="cash">Cash</option>
+                                <option value="bank_transfer">Bank Transfer</option>
+                                <option value="credit_card">Credit Card</option>
+                                <option value="debit_card">Debit Card</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </label>
+                        
+                        <label>
+                            <span>Category <span class="required">*</span></span>
+                            <select id="expense-category" name="expense_category" required>
+                                <option value="" disabled selected>Select a category</option>
+                                <!-- Categories will be populated by JavaScript -->
+                            </select>
+                        </label>
+                        
+                        <label>
+                            <span>Tax Deductible</span>
+                            <div class="radio-group">
+                                <label class="radio-option">
+                                    <input type="radio" name="tax-deductible" value="yes" checked>
+                                    <span>Yes</span>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="tax-deductible" value="no">
+                                    <span>No</span>
+                                </label>
+                            </div>
+                        </label>
+                        
+                        <label class="span-2">
+                            <span>Expense Notes</span>
+                            <textarea id="expense-notes" name="expense_notes" rows="3" placeholder="Optional notes about this expense"></textarea>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="submit" id="add-expense-save">Save</button>
+                    <button type="button" id="add-expense-cancel" class="secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
         </div>
     </div>
 
@@ -579,11 +640,87 @@
                 document.getElementById('expense-year').value = currentDate.getFullYear().toString();
             }
             
+            // Initialize the Add Expense form
+            function initAddExpenseForm() {
+                const form = document.getElementById('add-expense-form');
+                const categorySelect = document.getElementById('expense-category');
+                const saveButton = document.getElementById('add-expense-save');
+                const cancelButton = document.getElementById('add-expense-cancel');
+                const modal = document.getElementById('add-expense-modal-overlay');
+                
+                // Populate category dropdown from CONFIG.EXPENSES
+                if (categorySelect && CONFIG && CONFIG.EXPENSES) {
+                    // Clear existing options except the first one
+                    while (categorySelect.options.length > 1) {
+                        categorySelect.remove(1);
+                    }
+                    
+                    // Add categories from CONFIG.EXPENSES
+                    CONFIG.EXPENSES.forEach(expense => {
+                        const option = document.createElement('option');
+                        option.value = expense.expense_category;
+                        option.textContent = expense.expense_category;
+                        categorySelect.appendChild(option);
+                    });
+                }
+                
+                // Set today's date as default
+                const today = new Date().toISOString().split('T')[0];
+                const dateInput = document.getElementById('expense-date');
+                if (dateInput) {
+                    dateInput.value = today;
+                }
+                
+                // Handle form submission
+                if (form) {
+                    form.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        // In a real app, you would save the expense here
+                        console.log('Expense data:', {
+                            date: document.getElementById('expense-date').value,
+                            amount: document.getElementById('expense-amount').value,
+                            quantity: document.getElementById('expense-quantity').value,
+                            category: document.getElementById('expense-category').value,
+                            taxDeductible: document.querySelector('input[name="tax-deductible"]:checked').value,
+                            paymentMethod: document.getElementById('payment-method').value
+                        });
+                        
+                        // Close the modal
+                        if (modal) modal.hidden = true;
+                        
+                        // Reset the form
+                        form.reset();
+                        if (dateInput) dateInput.value = today;
+                    });
+                }
+                
+                // Handle save button click (in case form submission doesn't work)
+                if (saveButton) {
+                    saveButton.addEventListener('click', function() {
+                        form.dispatchEvent(new Event('submit'));
+                    });
+                }
+                
+                // Handle cancel button
+                if (cancelButton) {
+                    cancelButton.addEventListener('click', function() {
+                        if (modal) {
+                            modal.hidden = true;
+                            form.reset();
+                            if (dateInput) dateInput.value = today;
+                        }
+                    });
+                }
+            }
+            
             // Call initRevenueReport when the page loads
             initRevenueReport();
             
             // Initialize expense report when the page loads
             initExpenseReport();
+            
+            // Initialize the add expense form
+            initAddExpenseForm();
             
             // Add event listener for the Update button
             document.getElementById('update-revenue-report').addEventListener('click', initRevenueReport);
