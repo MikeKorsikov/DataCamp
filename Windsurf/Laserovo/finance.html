@@ -9,16 +9,15 @@
 <body>
     <main class="finance-main">
         <h1>Finance Management</h1>
-        <p>Page for tracking finances and payments.</p>
         
         <div class="finance-actions">
             <!-- Expenses Section -->
             <section class="finance-section">
                 <h2>Expenses</h2>
                 <div class="finance-actions-grid">
-                    <button>Add Expense</button>
-                    <button>Expense Report</button>
-                    <button>Expense Forecast</button>
+                    <button id="add-expense-btn" class="add-expense-btn">Add Expense</button>
+                    <button id="expense-report-btn" class="expense-report-btn">Expense Report</button>
+                    <button id="expense-forecast-btn" class="expense-forecast-btn">Expense Forecast</button>
                 </div>
             </section>
             
@@ -346,10 +345,16 @@
                 document.getElementById('total-revenue').textContent = totalRevenue.toFixed(2);
             }
 
-            // Set default selected month and year
+            // Set default selected month and year for reports
             const currentDate = new Date();
-            document.getElementById('revenue-month').value = currentDate.getMonth().toString();
-            document.getElementById('revenue-year').value = currentDate.getFullYear().toString();
+            if (document.getElementById('revenue-month')) {
+                document.getElementById('revenue-month').value = currentDate.getMonth().toString();
+                document.getElementById('revenue-year').value = currentDate.getFullYear().toString();
+            }
+            if (document.getElementById('expense-month')) {
+                document.getElementById('expense-month').value = currentDate.getMonth().toString();
+                document.getElementById('expense-year').value = currentDate.getFullYear().toString();
+            }
             
             // Call initRevenueReport when the page loads
             initRevenueReport();
@@ -360,17 +365,17 @@
             // Modal configuration
             const modals = [
                 {
-                    button: document.querySelector('.finance-section:nth-child(1) .finance-actions-grid button:nth-child(1)'),
+                    button: document.getElementById('add-expense-btn'),
                     modal: document.getElementById('add-expense-modal-overlay'),
                     cancel: document.getElementById('add-expense-cancel')
                 },
                 {
-                    button: document.querySelector('.finance-section:nth-child(1) .finance-actions-grid button:nth-child(2)'),
+                    button: document.getElementById('expense-report-btn'),
                     modal: document.getElementById('expense-report-modal-overlay'),
                     cancel: document.getElementById('expense-report-cancel')
                 },
                 {
-                    button: document.querySelector('.finance-section:nth-child(1) .finance-actions-grid button:nth-child(3)'),
+                    button: document.getElementById('expense-forecast-btn'),
                     modal: document.getElementById('expense-forecast-modal-overlay'),
                     cancel: document.getElementById('expense-forecast-cancel')
                 },

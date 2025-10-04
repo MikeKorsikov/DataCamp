@@ -1,0 +1,21 @@
+expense_unique_id, expense_date, expense_amount, quantity, expense_category, tax_deductible, payment_method
+1, 2025-01-01, 100, 1, rent, yes, bank transfer
+2, 2025-01-02, 200, 1, utilities, no, cash
+3, 2025-01-03, 300, 1, marketing, yes, credit card
+4, 2025-01-04, 400, 1, insurance, no, bank transfer
+5, 2025-01-05, 500, 1, rent, yes, bank transfer
+6, 2025-01-06, 600, 1, utilities, no, cash
+7, 2025-01-07, 700, 1, marketing, yes, credit card
+8, 2025-01-08, 800, 1, insurance, no, bank transfer
+9, 2025-01-09, 900, 1, rent, yes, bank transfer
+10, 2025-01-10, 1000, 1, utilities, no, cash
+11, 2025-01-11, 1100, 1, marketing, yes, credit card
+12, 2025-01-12, 1200, 1, insurance, no, bank transfer
+13, 2025-01-13, 1300, 1, rent, yes, bank transfer
+14, 2025-01-14, 1400, 1, utilities, no, cash
+15, 2025-01-15, 1500, 1, marketing, yes, credit card
+16, 2025-01-16, 1600, 1, insurance, no, bank transfer
+17, 2025-01-17, 1700, 1, rent, yes, bank transfer
+18, 2025-01-18, 1800, 1, utilities, no, cash
+19, 2025-01-19, 1900, 1, marketing, yes, credit card
+20, 2025-01-20, 2000, 1, insurance, no, bank transfer
