@@ -8,13 +8,13 @@
 </head>
 <body>
     <main style="max-width:1000px;margin:40px auto;padding:20px;">
-        <h1>Zarządzanie Wizytami</h1>
-        <p>Placeholder page for scheduling and managing appointments.</p>
+        <h1>Managing visits</h1>
+        <p>Page for scheduling and managing appointments.</p>
         <div class="actions">
             <button id="make-appointment">Make appointment</button>
             <button id="find-appointment">Find appointment</button>
             <button id="show-all">Show all</button>
-            <button id="upcoming-appointments">Upcoming appointments</button>
+            <button id="upcoming-appointments">Forecasted appointments</button>
         </div>
         <button onclick="location.href='index.html'">Back to Home</button>
     </main>
@@ -221,7 +221,10 @@
             <div class="modal-body" id="show-all-appointments-list">
                 <!-- Appointments will be dynamically loaded here -->
             </div>
-            <div class="modal-actions">
+            <div class="modal-actions" style="justify-content: flex-end;">
+                <button type="button" id="show-all-next7">Next 7 days</button>
+                <button type="button" id="show-all-next30">Next 30 days</button>
+                <button type="button" id="show-all-clear" class="secondary">Clear filter</button>
                 <button type="button" id="show-all-appointments-cancel" class="secondary">Close</button>
             </div>
         </div>
@@ -231,7 +234,7 @@
     <div class="modal-overlay" id="upcoming-appointments-modal-overlay" hidden>
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="upcoming-appointments-title">
             <div class="modal-header">
-                <h2 id="upcoming-appointments-title">Upcoming Appointments</h2>
+                <h2 id="upcoming-appointments-title">Forecasted Appointments</h2>
             </div>
             <div class="modal-body">
                 <div class="table-wrapper">
@@ -243,7 +246,7 @@
                                 <th>Area</th>
                                 <th>Last Visit</th>
                                 <th>Procedure #</th>
-                                <th>Next Visit</th>
+                                <th>Proposed next date</th>
                                 <th>Reminder</th>
                             </tr>
                         </thead>

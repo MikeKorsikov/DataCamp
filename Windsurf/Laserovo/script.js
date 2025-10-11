@@ -1586,11 +1586,32 @@ class AppointmentManager extends BaseManager {
                 };
             });
 
-            // Optional filter: only show rows with Next Visit within [today, today + days]
+            // Optional filter: show rows with Next Visit within [today, today + days] or overdue
             if (windowDays !== null) {
                 const minTs = todayDateOnly.getTime();
                 const maxTs = maxDateOnly.getTime();
-                rows = rows.filter(r => typeof r._nextDateOnlyTs === 'number' && r._nextDateOnlyTs >= minTs && r._nextDateOnlyTs <= maxTs);
+                // Include appointments that are either:
+                // 1. Within the date range [today, today + days], or
+                // 2. Overdue (next visit date is before today) and the next visit date is not too far in the past (within 30 days)
+                const thirtyDaysAgo = new Date(todayDateOnly);
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                const thirtyDaysAgoTs = thirtyDaysAgo.getTime();
+                
+                rows = rows.filter(r => {
+                    if (typeof r._nextDateOnlyTs !== 'number') return false;
+                    
+                    // Include if within the date range
+                    if (r._nextDateOnlyTs >= minTs && r._nextDateOnlyTs <= maxTs) {
+                        return true;
+                    }
+                    
+                    // Include if overdue but not too far in the past (within last 30 days)
+                    if (r.nextOverdue && r._nextDateOnlyTs >= thirtyDaysAgoTs) {
+                        return true;
+                    }
+                    
+                    return false;
+                });
             } else {
                 // Default view: exclude rows with blank Last Visit
                 rows = rows.filter(r => !!r.lastVisit);
