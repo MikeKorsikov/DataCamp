@@ -673,24 +673,72 @@
                 
                 // Handle form submission
                 if (form) {
-                    form.addEventListener('submit', function(e) {
+                    form.addEventListener('submit', async function(e) {
                         e.preventDefault();
-                        // In a real app, you would save the expense here
-                        console.log('Expense data:', {
-                            date: document.getElementById('expense-date').value,
-                            amount: document.getElementById('expense-amount').value,
-                            quantity: document.getElementById('expense-quantity').value,
-                            category: document.getElementById('expense-category').value,
-                            taxDeductible: document.querySelector('input[name="tax-deductible"]:checked').value,
-                            paymentMethod: document.getElementById('payment-method').value
-                        });
                         
-                        // Close the modal
-                        if (modal) modal.hidden = true;
+                        // Get form data
+                        const expenseData = {
+                            expense_date: document.getElementById('expense-date').value,
+                            expense_amount: parseFloat(document.getElementById('expense-amount').value),
+                            quantity: parseInt(document.getElementById('expense-quantity').value) || 1,
+                            expense_category: document.getElementById('expense-category').value,
+                            tax_deductible: document.querySelector('input[name="tax-deductible"]:checked').value,
+                            payment_method: document.getElementById('payment-method').value,
+                            expense_notes: document.getElementById('expense-notes').value || ''
+                        };
                         
-                        // Reset the form
-                        form.reset();
-                        if (dateInput) dateInput.value = today;
+                        // Validate required fields
+                        if (!expenseData.expense_date || isNaN(expenseData.expense_amount) || 
+                            !expenseData.expense_category || !expenseData.payment_method) {
+                            alert('Please fill in all required fields');
+                            return;
+                        }
+                        
+                        try {
+                            // Show loading state
+                            if (saveButton) {
+                                saveButton.disabled = true;
+                                saveButton.textContent = 'Saving...';
+                            }
+                            
+                            // Send data to server
+                            const response = await fetch('/expenses', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(expenseData)
+                            });
+                            
+                            const result = await response.json();
+                            
+                            if (!response.ok) {
+                                throw new Error(result.message || 'Failed to save expense');
+                            }
+                            
+                            // Show success message
+                            alert(result.message || 'Expense saved successfully!');
+                            
+                            // Close the modal
+                            if (modal) modal.hidden = true;
+                            
+                            // Reset the form
+                            form.reset();
+                            if (dateInput) dateInput.value = today;
+                            
+                            // Refresh the expense report
+                            initExpenseReport();
+                            
+                        } catch (error) {
+                            console.error('Error saving expense:', error);
+                            alert(`Error: ${error.message || 'Failed to save expense. Please try again.'}`);
+                        } finally {
+                            // Reset button state
+                            if (saveButton) {
+                                saveButton.disabled = false;
+                                saveButton.textContent = 'Save';
+                            }
+                        }
                     });
                 }
                 

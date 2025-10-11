@@ -32,6 +32,13 @@ APPOINTMENTS_CSV_FIELDS = [
     'visit_id', 'client_id', 'procedure_number', 'appointment_datetime', 'area', 'power', 'confirmed', 'amount_pln', 'created_at'
 ]
 
+# Expense-related constants
+EXPENSES_CSV_FILENAME = os.path.join(os.path.dirname(__file__), 'expenses.csv')
+EXPENSES_CSV_FIELDS = [
+    'expense_id', 'expense_date', 'expense_amount', 'quantity', 'expense_category', 
+    'tax_deductible', 'payment_method', 'expense_notes'
+]
+
 # Backup directory
 BACKUP_DIR = os.path.join(os.path.dirname(__file__), 'Backup')
 os.makedirs(BACKUP_DIR, exist_ok=True)
@@ -71,6 +78,11 @@ def ensure_clients_csv_header() -> None:
 def ensure_appointments_csv_header() -> None:
     """Ensure appointments CSV file exists with proper headers."""
     ensure_csv_header(APPOINTMENTS_CSV_FILENAME, APPOINTMENTS_CSV_FIELDS)
+
+
+def ensure_expenses_csv_header() -> None:
+    """Ensure expenses CSV file exists with proper headers."""
+    ensure_csv_header(EXPENSES_CSV_FILENAME, EXPENSES_CSV_FIELDS)
 
 
 def get_client_id_by_name(name: str, surname: str) -> Optional[str]:
@@ -699,6 +711,133 @@ def update_appointment(visit_id: str):
         
     except Exception as exc:
         return create_error_response(f'Failed to update appointment: {str(exc)}', HTTP_INTERNAL_SERVER_ERROR)
+
+
+@app.route('/expenses', methods=['POST', 'OPTIONS'])
+def create_expense():
+    """
+    Create a new expense record.
+    
+    Expected JSON payload:
+    {
+        'expense_date': str (required) - date in YYYY-MM-DD format,
+        'expense_amount': float (required) - amount in PLN,
+        'quantity': int (optional, default=1) - number of items,
+        'expense_category': str (required) - category of expense,
+        'tax_deductible': str (optional, default='yes') - 'yes' or 'no',
+        'payment_method': str (required) - payment method,
+        'expense_notes': str (optional) - additional notes
+    }
+    
+    Returns:
+        JSON response with expense details or error message
+    """
+    if request.method == 'OPTIONS':
+        return add_cors_headers(make_response('', HTTP_NO_CONTENT))
+
+    try:
+        payload = request.get_json(silent=True) or {}
+        
+        # Validate required fields
+        expense_date = str(payload.get('expense_date', '')).strip()
+        expense_category = str(payload.get('expense_category', '')).strip()
+        payment_method = str(payload.get('payment_method', '')).strip()
+        
+        # Get and validate amount
+        try:
+            amount = float(payload.get('expense_amount', 0))
+            if amount <= 0:
+                return create_error_response('Amount must be a positive number', HTTP_BAD_REQUEST)
+        except (ValueError, TypeError):
+            return create_error_response('Invalid amount. Must be a number', HTTP_BAD_REQUEST)
+        
+        # Check for empty required fields
+        if not all([expense_date, expense_category, payment_method]):
+            return create_error_response('Expense date, category, and payment method are required', HTTP_BAD_REQUEST)
+        
+        # Validate date format
+        try:
+            datetime.strptime(expense_date, '%Y-%m-%d')
+        except ValueError:
+            return create_error_response('Invalid date format. Use YYYY-MM-DD', HTTP_BAD_REQUEST)
+        
+        # Set default values for optional fields
+        quantity = int(payload.get('quantity', 1))
+        tax_deductible = 'yes' if str(payload.get('tax_deductible', 'yes')).lower() == 'yes' else 'no'
+        expense_notes = (payload.get('expense_notes') or '').strip()
+        
+        # Generate expense ID and timestamp
+        expense_id = uuid.uuid4().hex
+        
+        # Create expense record
+        record = {
+            'expense_id': expense_id,
+            'expense_date': expense_date,
+            'expense_amount': f"{amount:.2f}",
+            'quantity': quantity,
+            'expense_category': expense_category,
+            'tax_deductible': tax_deductible,
+            'payment_method': payment_method,
+            'expense_notes': expense_notes
+        }
+        
+        # Save to CSV
+        ensure_expenses_csv_header()
+        with open(EXPENSES_CSV_FILENAME, mode='a', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=EXPENSES_CSV_FIELDS)
+            writer.writerow(record)
+        
+        return create_success_response({
+            'expense_id': expense_id,
+            'message': f'Expense of {amount:.2f} PLN for {expense_category} saved successfully.'
+        }, HTTP_CREATED)
+        
+    except Exception as e:
+        return create_error_response(f'Failed to save expense: {str(e)}', HTTP_INTERNAL_SERVER_ERROR)
+
+
+@app.route('/expenses', methods=['GET', 'OPTIONS'])
+def get_all_expenses():
+    """
+    Get all expenses.
+    
+    Returns:
+        JSON response with list of all expenses
+    """
+    if request.method == 'OPTIONS':
+        return add_cors_headers(make_response('', HTTP_NO_CONTENT))
+
+    try:
+        if not os.path.exists(EXPENSES_CSV_FILENAME):
+            return create_success_response({'expenses': []})
+        
+        expenses = []
+        with open(EXPENSES_CSV_FILENAME, mode='r', newline='', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            expenses = list(reader)
+        
+        # Convert amount to float for proper sorting
+        for expense in expenses:
+            if 'expense_amount' in expense and expense['expense_amount']:
+                try:
+                    expense['expense_amount'] = float(expense['expense_amount'])
+                except (ValueError, TypeError):
+                    expense['expense_amount'] = 0.0
+            
+            # Convert quantity to int
+            if 'quantity' in expense and expense['quantity']:
+                try:
+                    expense['quantity'] = int(expense['quantity'])
+                except (ValueError, TypeError):
+                    expense['quantity'] = 1
+        
+        # Sort by date (newest first)
+        expenses.sort(key=lambda x: x.get('expense_date', ''), reverse=True)
+        
+        return create_success_response({'expenses': expenses})
+        
+    except Exception as e:
+        return create_error_response(f'Failed to retrieve expenses: {str(e)}', HTTP_INTERNAL_SERVER_ERROR)
 
 
 @app.route('/')
