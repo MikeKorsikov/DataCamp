@@ -1360,6 +1360,9 @@ class AppointmentManager extends BaseManager {
         const button = document.getElementById('show-all');
         const modal = document.getElementById('show-all-appointments-modal-overlay');
         const cancelButton = document.getElementById('show-all-appointments-cancel');
+        const next7Button = document.getElementById('show-all-next7');
+        const next30Button = document.getElementById('show-all-next30');
+        const clearButton = document.getElementById('show-all-clear');
         const list = document.getElementById('show-all-appointments-list');
         
         this.setupModalListeners({
@@ -1377,28 +1380,66 @@ class AppointmentManager extends BaseManager {
                 }
             });
         }
+
+        // Add event listener for Next 7 days button
+        if (next7Button) {
+            next7Button.addEventListener('click', () => {
+                this.loadAllAppointments({ daysAhead: 7 });
+            });
+        }
+
+        // Add event listener for Next 30 days button
+        if (next30Button) {
+            next30Button.addEventListener('click', () => {
+                this.loadAllAppointments({ daysAhead: 30 });
+            });
+        }
+
+        // Add event listener for Clear filter button
+        if (clearButton) {
+            clearButton.addEventListener('click', () => {
+                this.loadAllAppointments();
+            });
+        }
     }
     
     /**
      * Load and display all appointments with client data
+     * @param {Object} options - Filtering options
+     * @param {number} [options.daysAhead] - Number of days ahead to filter appointments
      */
-    async loadAllAppointments() {
+    async loadAllAppointments(options = {}) {
+        const appointmentsList = document.getElementById('show-all-appointments-list');
+        if (!appointmentsList) return;
+
+        appointmentsList.innerHTML = '<p>Loading appointments...</p>';
+        
         try {
             const response = await apiRequest('/appointments');
-            const appointmentsList = document.getElementById('show-all-appointments-list');
-            
-            if (!appointmentsList) return;
-            
-            appointmentsList.innerHTML = '';
-            
-            if (response.results.length === 0) {
-                appointmentsList.innerHTML = '<p>No appointments found.</p>';
-                return;
-            }
-            
-            // Also fetch clients to map names for sorting by Name (A→Z)
             const clientsResp = await apiRequest('/clients');
             const clientById = new Map((clientsResp.results || []).map(c => [c.id, c]));
+            
+            // Filter appointments based on date range if daysAhead is specified
+            let appointments = response.results || [];
+            
+            if (options.daysAhead) {
+                const now = new Date();
+                const endDate = new Date();
+                endDate.setDate(now.getDate() + options.daysAhead);
+                
+                appointments = appointments.filter(appt => {
+                    const apptDate = new Date(appt.appointment_datetime);
+                    return apptDate >= now && apptDate <= endDate;
+                });
+                
+                // Sort by date and time
+                appointments.sort((a, b) => {
+                    return new Date(a.appointment_datetime) - new Date(b.appointment_datetime);
+                });
+            }
+            
+            // Clear previous content
+            appointmentsList.innerHTML = '';
             
             // Create table header
             const headerElement = createElement('div', 'show-all-appointments-header', `
@@ -1412,16 +1453,26 @@ class AppointmentManager extends BaseManager {
             `);
             if (headerElement) appointmentsList.appendChild(headerElement);
             
-            // Sort by client's Name (A→Z), then Surname
-            const sortedAppointments = [...response.results].sort((a, b) => {
-                const ca = clientById.get(a.client_id) || {}; 
-                const cb = clientById.get(b.client_id) || {};
-                const n = (ca.name || '').localeCompare(cb.name || '');
-                return n !== 0 ? n : (ca.surname || '').localeCompare(cb.surname || '');
-            });
+            // If no appointments found
+            if (appointments.length === 0) {
+                const noResults = createElement('div', 'no-results', 'No appointments found' + 
+                    (options.daysAhead ? ` in the next ${options.daysAhead} days` : ''));
+                appointmentsList.appendChild(noResults);
+                return;
+            }
             
-            // Create appointment rows (use existing rendering expectations)
-            for (const appointment of sortedAppointments) {
+            // Sort by client's Name (A→Z), then Surname if not already sorted by date
+            if (!options.daysAhead) {
+                appointments.sort((a, b) => {
+                    const ca = clientById.get(a.client_id) || {}; 
+                    const cb = clientById.get(b.client_id) || {};
+                    const n = (ca.name || '').localeCompare(cb.name || '');
+                    return n !== 0 ? n : (ca.surname || '').localeCompare(cb.surname || '');
+                });
+            }
+            
+            // Create appointment rows
+            for (const appointment of appointments) {
                 const client = clientById.get(appointment.client_id) || { name: 'N/A', surname: 'N/A' };
                 const { date, time } = formatDateTime(appointment.appointment_datetime);
                 const appointmentElement = createElement('div', 'show-all-appointments-row', `
