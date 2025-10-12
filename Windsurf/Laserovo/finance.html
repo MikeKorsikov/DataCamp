@@ -316,12 +316,81 @@
 
     <!-- P&L Report Modal -->
     <div class="modal-overlay" id="pl-report-modal-overlay" hidden>
-        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="pl-report-modal-title">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="pl-report-modal-title" style="max-width: 700px;">
             <div class="modal-header">
                 <h2 id="pl-report-modal-title">P&L Report</h2>
             </div>
             <div class="modal-body">
-                <p>Profit and Loss report content will be displayed here.</p>
+                <div class="pl-filters" style="margin-bottom: 20px;">
+                    <div style="display: flex; gap: 15px; align-items: flex-end; margin-bottom: 15px;">
+                        <div>
+                            <label for="pl-month" style="display: block; margin-bottom: 5px; font-weight: 500;">Month</label>
+                            <select id="pl-month" class="form-select" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #d1d5db; width: 150px;">
+                                <option value="">All Months</option>
+                                <option value="0">January</option>
+                                <option value="1">February</option>
+                                <option value="2">March</option>
+                                <option value="3">April</option>
+                                <option value="4">May</option>
+                                <option value="5">June</option>
+                                <option value="6">July</option>
+                                <option value="7">August</option>
+                                <option value="8">September</option>
+                                <option value="9">October</option>
+                                <option value="10">November</option>
+                                <option value="11">December</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="pl-year" style="display: block; margin-bottom: 5px; font-weight: 500;">Year</label>
+                            <select id="pl-year" class="form-select" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #d1d5db; width: 120px;">
+                                <option value="">All Years</option>
+                                <option value="2023">2023</option>
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button id="update-pl-report" class="primary-button" style="background: #111827; color: #ffffff; border: none; border-radius: 8px; padding: 10px 16px; cursor: pointer; font-size: 1rem; height: 40px; font-family: sans-serif; align-self: flex-end;">
+                                Update
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="pl-table-container" style="overflow-x: auto;">
+                    <table class="pl-table" style="width: 100%; border-collapse: collapse; margin-bottom: 20px; border-radius: 8px; overflow: hidden;">
+                        <colgroup>
+                            <col style="width: 40%;">
+                            <col style="width: 30%;">
+                            <col style="width: 30%;">
+                        </colgroup>
+                        <thead>
+                            <tr style="background-color: #f3f4f6;">
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #d1d5db; font-weight: 600;">Category</th>
+                                <th style="padding: 12px; text-align: right; border-bottom: 2px solid #d1d5db; font-weight: 600;">PLN</th>
+                                <th style="padding: 12px; text-align: right; border-bottom: 2px solid #d1d5db; font-weight: 600;">%</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pl-report-body">
+                            <tr>
+                                <td style="padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb;">Revenue</td>
+                                <td id="revenue-amount" style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">0.00</td>
+                                <td id="revenue-percent" style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">0.0%</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb;">Costs</td>
+                                <td id="costs-amount" style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">0.00</td>
+                                <td id="costs-percent" style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">0.0%</td>
+                            </tr>
+                            <tr style="font-weight: 600; background-color: #f1f5f9; border-top: 2px solid #d1d5db;">
+                                <td style="padding: 12px; text-align: left;">Profit</td>
+                                <td id="profit-amount" style="padding: 12px; text-align: right; background-color: #e2e8f0;">0.00</td>
+                                <td id="profit-percent" style="padding: 12px; text-align: right; background-color: #e2e8f0;">0.0%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <div class="modal-actions">
                 <button id="pl-report-cancel" class="secondary-button">Close</button>
@@ -348,15 +417,15 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Calculate revenue by treatment zone from appointments data
-            async function calculateRevenueByZone() {
+            async function calculateRevenueByZone(prefix = 'revenue') {
                 try {
                     const response = await fetch('appointments.csv');
                     const csvData = await response.text();
                     const lines = csvData.split('\n').slice(1); // Skip header row
                     
                     // Get selected month and year
-                    const selectedMonth = document.getElementById('revenue-month').value;
-                    const selectedYear = document.getElementById('revenue-year').value;
+                    const selectedMonth = document.getElementById(`${prefix}-month`)?.value;
+                    const selectedYear = document.getElementById(`${prefix}-year`)?.value;
                     
                     // Initialize revenue object with all areas from CONFIG
                     const revenueByZone = {};
@@ -761,8 +830,188 @@
                 }
             }
             
+            // Function to calculate total expenses from expenses.csv
+            async function calculateTotalExpenses() {
+                try {
+                    const selectedMonth = document.getElementById('pl-month')?.value;
+                    const selectedYear = document.getElementById('pl-year')?.value;
+                    
+                    const response = await fetch('expenses.csv');
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch expenses.csv: ${response.status} ${response.statusText}`);
+                    }
+                    
+                    const csvData = await response.text();
+                    if (!csvData) {
+                        console.warn('expenses.csv is empty');
+                        return 0;
+                    }
+                    
+                    const lines = csvData.split('\n').filter(line => line.trim() !== '');
+                    if (lines.length <= 1) { // Only header or empty
+                        console.warn('No expense data found in expenses.csv');
+                        return 0;
+                    }
+                    
+                    let totalExpenses = 0;
+                    let lineNumber = 1; // Start at 1 to account for header
+                    
+                    for (const line of lines.slice(1)) { // Skip header
+                        lineNumber++;
+                        if (!line.trim()) continue;
+                        
+                        const columns = line.split(',').map(item => item.trim());
+                        if (columns.length < 3) { // At least need id, date, amount
+                            console.warn(`Skipping malformed line ${lineNumber}: ${line}`);
+                            continue;
+                        }
+                        
+                        const [id, date, amount] = columns;
+                        
+                        // Parse amount
+                        const expenseAmount = parseFloat(amount);
+                        if (isNaN(expenseAmount)) {
+                            console.warn(`Skipping line ${lineNumber}: Invalid amount '${amount}'`);
+                            continue;
+                        }
+                        
+                        // Parse date (assuming YYYY-MM-DD format)
+                        let expenseDate;
+                        try {
+                            // Try parsing as ISO format first
+                            expenseDate = new Date(date);
+                            
+                            // If date is invalid, try parsing with a different format
+                            if (isNaN(expenseDate.getTime())) {
+                                // Try DD/MM/YYYY format (common in some locales)
+                                const parts = date.split(/[\/\s-]/);
+                                if (parts.length === 3) {
+                                    expenseDate = new Date(parts[2], parts[1] - 1, parts[0]);
+                                }
+                                
+                                // If still invalid, skip this line
+                                if (isNaN(expenseDate.getTime())) {
+                                    console.warn(`Skipping line ${lineNumber}: Invalid date '${date}'`);
+                                    continue;
+                                }
+                            }
+                            
+                            // Get month (0-11) and year
+                            const expenseMonth = expenseDate.getMonth().toString();
+                            const expenseYear = expenseDate.getFullYear().toString();
+                            
+                            // Apply filters
+                            if (selectedMonth && selectedMonth !== '' && expenseMonth !== selectedMonth) continue;
+                            if (selectedYear && selectedYear !== '' && expenseYear !== selectedYear) continue;
+                            
+                            totalExpenses += expenseAmount;
+                            
+                        } catch (dateError) {
+                            console.warn(`Error processing date on line ${lineNumber}:`, dateError);
+                            continue;
+                        }
+                    }
+                    
+                    console.log(`Calculated total expenses: ${totalExpenses.toFixed(2)}`);
+                    return totalExpenses;
+                    
+                } catch (error) {
+                    console.error('Error calculating total expenses:', error);
+                    return 0;
+                }
+            }
+
+            // Function to update P&L report with revenue and costs data
+            async function updatePLReport() {
+                try {
+                    // Get selected month and year
+                    const selectedMonth = document.getElementById('pl-month').value;
+                    const selectedYear = document.getElementById('pl-year').value;
+                    
+                    // Get revenue data using the existing function with 'pl' prefix for selectors
+                    const areas = await calculateRevenueByZone('pl');
+                    
+                    // Calculate total revenue from all zones
+                    let totalRevenue = 0;
+                    areas.forEach(zone => {
+                        totalRevenue += zone.revenue || 0; // Ensure we're adding numbers, handle undefined
+                    });
+                    
+                    // Get total expenses
+                    const totalExpenses = await calculateTotalExpenses();
+                    
+                    // Calculate profit
+                    const profit = totalRevenue - totalExpenses;
+                    
+                    // Update the UI with revenue data
+                    document.getElementById('revenue-amount').textContent = totalRevenue.toFixed(2);
+                    document.getElementById('revenue-percent').textContent = '100.0%';
+                    
+                    // Update costs row
+                    const costsAmount = document.getElementById('costs-amount');
+                    const costsPercent = document.getElementById('costs-percent');
+                    if (costsAmount && costsPercent) {
+                        costsAmount.textContent = totalExpenses.toFixed(2);
+                        const expensePercentage = totalRevenue > 0 ? 
+                            (totalExpenses / totalRevenue * 100).toFixed(1) + '%' : '0.0%';
+                        costsPercent.textContent = expensePercentage;
+                    }
+                    
+                    // Update profit row
+                    const profitAmount = document.getElementById('profit-amount');
+                    const profitPercent = document.getElementById('profit-percent');
+                    if (profitAmount && profitPercent) {
+                        profitAmount.textContent = profit.toFixed(2);
+                        const profitPercentage = totalRevenue > 0 ? 
+                            (profit / totalRevenue * 100).toFixed(1) + '%' : '0.0%';
+                        profitPercent.textContent = profitPercentage;
+                    }
+                    
+                } catch (error) {
+                    console.error('Error updating P&L report:', error);
+                }
+            }
+            
+            // Initialize P&L Report
+            function initPLReport() {
+                const updateButton = document.getElementById('update-pl-report');
+                const cancelButton = document.getElementById('pl-report-cancel');
+                const modal = document.getElementById('pl-report-modal-overlay');
+                const monthSelect = document.getElementById('pl-month');
+                const yearSelect = document.getElementById('pl-year');
+                
+                // Set default selected month and year
+                const currentDate = new Date();
+                if (monthSelect) {
+                    monthSelect.value = currentDate.getMonth().toString();
+                    monthSelect.addEventListener('change', updatePLReport);
+                }
+                if (yearSelect) {
+                    yearSelect.value = currentDate.getFullYear().toString();
+                    yearSelect.addEventListener('change', updatePLReport);
+                }
+                
+                // Update button click handler
+                if (updateButton) {
+                    updateButton.addEventListener('click', updatePLReport);
+                }
+                
+                // Cancel button click handler
+                if (cancelButton) {
+                    cancelButton.addEventListener('click', () => {
+                        if (modal) modal.hidden = true;
+                    });
+                }
+                
+                // Initial update
+                updatePLReport();
+            }
+            
             // Call initRevenueReport when the page loads
             initRevenueReport();
+            
+            // Initialize P&L Report
+            initPLReport();
             
             // Initialize expense report when the page loads
             initExpenseReport();
@@ -772,6 +1021,20 @@
             
             // Add event listener for the Update button
             document.getElementById('update-revenue-report').addEventListener('click', initRevenueReport);
+            
+            // Add event listener for P&L Report button
+            const plReportButtons = document.querySelectorAll('.finance-actions-grid button');
+            plReportButtons.forEach(button => {
+                if (button.textContent.trim() === 'P&L Report') {
+                    button.addEventListener('click', function() {
+                        const modal = document.getElementById('pl-report-modal-overlay');
+                        if (modal) {
+                            modal.hidden = false;
+                            updatePLReport(); // Update data when opening the modal
+                        }
+                    });
+                }
+            });
 
             // Modal configuration
             const modals = [
