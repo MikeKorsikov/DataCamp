@@ -126,11 +126,11 @@
                 <h2 id="expense-report-modal-title">Expense Report</h2>
             </div>
             <div class="modal-body">
-                <div class="expense-filters" style="margin-bottom: 20px;">
-                    <div style="display: flex; gap: 15px; align-items: flex-end; margin-bottom: 15px;">
-                        <div>
-                            <label for="expense-month" style="display: block; margin-bottom: 5px; font-weight: 500;">Month</label>
-                            <select id="expense-month" class="form-select" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #d1d5db; width: 150px;">
+                <div class="report-filters">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label for="expense-month">Month</label>
+                            <select id="expense-month" class="form-select">
                                 <option value="">All Months</option>
                                 <option value="0">January</option>
                                 <option value="1">February</option>
@@ -146,9 +146,9 @@
                                 <option value="11">December</option>
                             </select>
                         </div>
-                        <div>
-                            <label for="expense-year" style="display: block; margin-bottom: 5px; font-weight: 500;">Year</label>
-                            <select id="expense-year" class="form-select" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #d1d5db; width: 120px;">
+                        <div class="filter-group">
+                            <label for="expense-year">Year</label>
+                            <select id="expense-year" class="form-select">
                                 <option value="">All Years</option>
                                 <option value="2023">2023</option>
                                 <option value="2024">2024</option>
@@ -156,11 +156,9 @@
                                 <option value="2026">2026</option>
                             </select>
                         </div>
-                        <div>
-                            <button id="update-expense-report" class="primary-button" style="background: #111827; color: #ffffff; border: none; border-radius: 8px; padding: 10px 16px; cursor: pointer; font-size: 1rem; height: 40px; font-family: sans-serif; align-self: flex-end;">
-                                Update
-                            </button>
-                        </div>
+                        <button id="update-expense-report" class="update-button">
+                            Update
+                        </button>
                     </div>
                 </div>
                 <div class="expense-table-container" style="overflow-x: auto;">
@@ -218,11 +216,11 @@
                 <h2 id="revenue-report-modal-title">Revenue Report</h2>
             </div>
             <div class="modal-body">
-                <div class="revenue-filters" style="margin-bottom: 20px;">
-                    <div style="display: flex; gap: 15px; align-items: flex-end; margin-bottom: 15px;">
-                        <div>
-                            <label for="revenue-month" style="display: block; margin-bottom: 5px; font-weight: 500;">Month</label>
-                            <select id="revenue-month" class="form-select" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #d1d5db; width: 150px;">
+                <div class="report-filters">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label for="revenue-month">Month</label>
+                            <select id="revenue-month" class="form-select">
                                 <option value="">All Months</option>
                                 <option value="0">January</option>
                                 <option value="1">February</option>
@@ -238,9 +236,9 @@
                                 <option value="11">December</option>
                             </select>
                         </div>
-                        <div>
-                            <label for="revenue-year" style="display: block; margin-bottom: 5px; font-weight: 500;">Year</label>
-                            <select id="revenue-year" class="form-select" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #d1d5db; width: 120px;">
+                        <div class="filter-group">
+                            <label for="revenue-year">Year</label>
+                            <select id="revenue-year" class="form-select">
                                 <option value="">All Years</option>
                                 <option value="2023">2023</option>
                                 <option value="2024">2024</option>
@@ -248,11 +246,9 @@
                                 <option value="2026">2026</option>
                             </select>
                         </div>
-                        <div>
-                            <button id="update-revenue-report" class="primary-button" style="background: #111827; color: #ffffff; border: none; border-radius: 8px; padding: 10px 16px; cursor: pointer; font-size: 1rem; height: 40px; font-family: sans-serif; align-self: flex-end;">
-                                Update
-                            </button>
-                        </div>
+                        <button id="update-revenue-report" class="update-button">
+                            Update
+                        </button>
                     </div>
                 </div>
                 <div class="revenue-table-container" style="overflow-x: auto;">
@@ -321,11 +317,11 @@
                 <h2 id="pl-report-modal-title">P&L Report</h2>
             </div>
             <div class="modal-body">
-                <div class="pl-filters" style="margin-bottom: 20px;">
-                    <div style="display: flex; gap: 15px; align-items: flex-end; margin-bottom: 15px;">
-                        <div>
-                            <label for="pl-month" style="display: block; margin-bottom: 5px; font-weight: 500;">Month</label>
-                            <select id="pl-month" class="form-select" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #d1d5db; width: 150px;">
+                <div class="report-filters">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label for="pl-month">Month</label>
+                            <select id="pl-month" class="form-select">
                                 <option value="">All Months</option>
                                 <option value="0">January</option>
                                 <option value="1">February</option>
@@ -341,9 +337,9 @@
                                 <option value="11">December</option>
                             </select>
                         </div>
-                        <div>
-                            <label for="pl-year" style="display: block; margin-bottom: 5px; font-weight: 500;">Year</label>
-                            <select id="pl-year" class="form-select" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #d1d5db; width: 120px;">
+                        <div class="filter-group">
+                            <label for="pl-year">Year</label>
+                            <select id="pl-year" class="form-select">
                                 <option value="">All Years</option>
                                 <option value="2023">2023</option>
                                 <option value="2024">2024</option>
@@ -351,11 +347,9 @@
                                 <option value="2026">2026</option>
                             </select>
                         </div>
-                        <div>
-                            <button id="update-pl-report" class="primary-button" style="background: #111827; color: #ffffff; border: none; border-radius: 8px; padding: 10px 16px; cursor: pointer; font-size: 1rem; height: 40px; font-family: sans-serif; align-self: flex-end;">
-                                Update
-                            </button>
-                        </div>
+                        <button id="update-pl-report" class="update-button">
+                            Update
+                        </button>
                     </div>
                 </div>
                 <div class="pl-table-container" style="overflow-x: auto;">

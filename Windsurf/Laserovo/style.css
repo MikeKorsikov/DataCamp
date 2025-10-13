@@ -5,6 +5,92 @@ body {
     color: #111827;
 }
 
+/* Standardized Filter Styles */
+.report-filters {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.filter-row {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 150px;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #4a5568;
+    font-size: 0.875rem;
+}
+
+.form-select {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    font-size: 0.875rem;
+    color: #1f2937;
+    background-color: white;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.update-button {
+    background: #111827;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    height: 40px;
+    font-family: inherit;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+.update-button:hover {
+    background-color: #1f2937;
+}
+
+.update-button:active {
+    background-color: #111827;
+}
+
+@media (max-width: 640px) {
+    .filter-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group {
+        min-width: 100%;
+    }
+    
+    .update-button {
+        width: 100%;
+    }
+}
+
+
 .tiles {
     display: grid;
     grid-template-columns: repeat(2, minmax(240px, 1fr));
