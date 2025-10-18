@@ -1615,6 +1615,25 @@ label small {
     font-weight: 600;
 }
 
+/* Progress container - centered percentage only */
+.stats-list .progress {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    text-align: center;
+    height: 100%;
+}
+
+/* Progress percentage text */
+.progress-text {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #059669; /* Dark green text color */
+    text-align: center;
+    width: 100%;
+}
+
 .stats-list .last-visit {
     color: #6b7280;
     font-style: italic;
