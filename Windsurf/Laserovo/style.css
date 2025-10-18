@@ -1136,7 +1136,7 @@ label small {
 /* Show All Clients table styling */
 .show-all-clients-header {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 2fr 1fr auto;
+    grid-template-columns: 1fr 1fr 1fr 2fr 1fr auto auto;
     gap: 12px;
     padding: 12px 20px;
     background: #f3f4f6;
@@ -1161,7 +1161,7 @@ label small {
 
 .show-all-clients-row {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 2fr 1fr auto;
+    grid-template-columns: 1fr 1fr 1fr 2fr 1fr auto auto;
     gap: 12px;
     padding: 12px 20px;
     background: #ffffff;

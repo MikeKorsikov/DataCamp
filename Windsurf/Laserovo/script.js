@@ -656,6 +656,7 @@ class ClientManager extends BaseManager {
                 <div class="show-all-header-cell">Phone</div>
                 <div class="show-all-header-cell">Email</div>
                 <div class="show-all-header-cell">DOB</div>
+                <div class="show-all-header-cell">STATS</div>
                 <div class="show-all-header-cell">Action</div>
             `);
             
@@ -677,6 +678,7 @@ class ClientManager extends BaseManager {
                     <div class="show-all-cell">${client.phone || 'N/A'}</div>
                     <div class="show-all-cell">${client.email || 'N/A'}</div>
                     <div class="show-all-cell">${client.dob || 'N/A'}</div>
+                    <div class="show-all-cell"></div>
                     <div class="show-all-cell">
                         <button class="edit-btn" data-client-id="${client.id}">Edit</button>
                     </div>
