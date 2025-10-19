@@ -1136,7 +1136,7 @@ label small {
 /* Show All Clients table styling */
 .show-all-clients-header {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 2fr 1fr auto auto;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr auto;
     gap: 12px;
     padding: 12px 20px;
     background: #f3f4f6;
@@ -1149,19 +1149,19 @@ label small {
     position: sticky;
     top: 0;
     z-index: 1;
+    text-align: center;
 }
 
 .show-all-header-cell {
-    text-align: left;
-}
-
-.show-all-header-cell:last-child {
     text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .show-all-clients-row {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 2fr 1fr auto auto;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr auto;
     gap: 12px;
     padding: 12px 20px;
     background: #ffffff;
@@ -1175,19 +1175,24 @@ label small {
 
 .show-all-clients-row .show-all-cell {
     display: flex;
+    justify-content: center;
     align-items: center;
+    text-align: center;
     font-size: 0.9rem;
     color: #374151;
     word-wrap: break-word;
     overflow-wrap: break-word;
 }
 
-.show-all-clients-row .show-all-cell:last-child {
+.show-all-clients-row .show-all-cell:last-child,
+.show-all-clients-row .show-all-cell:nth-child(4) {
     justify-content: center;
+    text-align: center;
 }
 
-/* Edit button styling for clients table */
-.show-all-clients-row .edit-btn {
+/* Button styling for clients table */
+.show-all-clients-row .edit-btn,
+.show-all-clients-row .stats-btn {
     padding: 6px 12px;
     background: #111827;
     color: white;
@@ -1200,7 +1205,8 @@ label small {
     font-family: sans-serif;
 }
 
-.show-all-clients-row .edit-btn:hover {
+.show-all-clients-row .edit-btn:hover,
+.show-all-clients-row .stats-btn:hover {
     background: #1f2937;
 }
 

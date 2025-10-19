@@ -620,13 +620,16 @@ class ClientManager extends BaseManager {
             closeCallback: () => { if (list) list.innerHTML = ''; }
         });
         
-        // Handle edit button clicks from show all modal
+        // Handle edit and stats button clicks from show all modal
         if (list) {
-            list.addEventListener('click', (e) => {
+            list.addEventListener('click', async (e) => {
                 if (e.target.classList.contains('edit-btn')) {
                     const clientId = e.target.getAttribute('data-client-id');
                     this.openEditModal(clientId);
                     modalManager.close();
+                } else if (e.target.classList.contains('stats-btn')) {
+                    const clientId = e.target.getAttribute('data-client-id');
+                    await this.showClientStats(clientId);
                 }
             });
         }
@@ -678,7 +681,9 @@ class ClientManager extends BaseManager {
                     <div class="show-all-cell">${client.phone || 'N/A'}</div>
                     <div class="show-all-cell">${client.email || 'N/A'}</div>
                     <div class="show-all-cell">${client.dob || 'N/A'}</div>
-                    <div class="show-all-cell"></div>
+                    <div class="show-all-cell">
+                        <button class="stats-btn" data-client-id="${client.id}">Stats</button>
+                    </div>
                     <div class="show-all-cell">
                         <button class="edit-btn" data-client-id="${client.id}">Edit</button>
                     </div>
