@@ -978,11 +978,9 @@
                 const currentDate = new Date();
                 if (monthSelect) {
                     monthSelect.value = currentDate.getMonth().toString();
-                    monthSelect.addEventListener('change', updatePLReport);
                 }
                 if (yearSelect) {
                     yearSelect.value = currentDate.getFullYear().toString();
-                    yearSelect.addEventListener('change', updatePLReport);
                 }
                 
                 // Update button click handler
