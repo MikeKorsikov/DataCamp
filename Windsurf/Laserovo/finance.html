@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finance - Laserovo</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -410,11 +411,31 @@
     <script src="script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // CSV Data Cache to prevent duplicate fetches
+            const csvCache = {
+                appointments: null,
+                expenses: null
+            };
+            
+            // Fetch CSV with caching
+            async function fetchCSVWithCache(filename) {
+                const cacheKey = filename.replace('.csv', '');
+                if (csvCache[cacheKey]) {
+                    console.log(`Using cached data for ${filename}`);
+                    return csvCache[cacheKey];
+                }
+                
+                console.log(`Fetching ${filename} from server`);
+                const response = await fetch(filename);
+                const data = await response.text();
+                csvCache[cacheKey] = data;
+                return data;
+            }
+            
             // Calculate revenue by treatment zone from appointments data
             async function calculateRevenueByZone(prefix = 'revenue') {
                 try {
-                    const response = await fetch('appointments.csv');
-                    const csvData = await response.text();
+                    const csvData = await fetchCSVWithCache('appointments.csv');
                     const lines = csvData.split('\n').slice(1); // Skip header row
                     
                     // Get selected month and year
@@ -601,8 +622,7 @@
                     const selectedYear = document.getElementById('expense-year')?.value;
                     
                     // Fetch and parse the expenses data
-                    const response = await fetch('expenses.csv');
-                    const csvData = await response.text();
+                    const csvData = await fetchCSVWithCache('expenses.csv');
                     let expenses = parseCSV(csvData);
                     
                     // Filter expenses by selected period
@@ -830,12 +850,7 @@
                     const selectedMonth = document.getElementById('pl-month')?.value;
                     const selectedYear = document.getElementById('pl-year')?.value;
                     
-                    const response = await fetch('expenses.csv');
-                    if (!response.ok) {
-                        throw new Error(`Failed to fetch expenses.csv: ${response.status} ${response.statusText}`);
-                    }
-                    
-                    const csvData = await response.text();
+                    const csvData = await fetchCSVWithCache('expenses.csv');
                     if (!csvData) {
                         console.warn('expenses.csv is empty');
                         return 0;
