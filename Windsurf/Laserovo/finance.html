@@ -411,25 +411,41 @@
     <script src="script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // CSV Data Cache to prevent duplicate fetches
-            const csvCache = {
-                appointments: null,
-                expenses: null
-            };
+            // Promise-based CSV Data Cache to prevent duplicate and concurrent fetches
+            const csvCache = new Map();
+            const pendingRequests = new Map();
             
-            // Fetch CSV with caching
+            // Fetch CSV with Promise-based caching to prevent concurrent requests
             async function fetchCSVWithCache(filename) {
-                const cacheKey = filename.replace('.csv', '');
-                if (csvCache[cacheKey]) {
-                    console.log(`Using cached data for ${filename}`);
-                    return csvCache[cacheKey];
+                // Return cached data if available
+                if (csvCache.has(filename)) {
+                    console.log(`✓ Using cached data for ${filename}`);
+                    return csvCache.get(filename);
                 }
                 
-                console.log(`Fetching ${filename} from server`);
-                const response = await fetch(filename);
-                const data = await response.text();
-                csvCache[cacheKey] = data;
-                return data;
+                // Return pending promise if request is already in flight
+                if (pendingRequests.has(filename)) {
+                    console.log(`⏳ Waiting for in-flight request: ${filename}`);
+                    return pendingRequests.get(filename);
+                }
+                
+                // Create new fetch promise
+                console.log(`🌐 Fetching ${filename} from server`);
+                const fetchPromise = fetch(filename)
+                    .then(response => response.text())
+                    .then(data => {
+                        csvCache.set(filename, data);
+                        pendingRequests.delete(filename);
+                        return data;
+                    })
+                    .catch(error => {
+                        pendingRequests.delete(filename);
+                        throw error;
+                    });
+                
+                // Store the pending promise
+                pendingRequests.set(filename, fetchPromise);
+                return fetchPromise;
             }
             
             // Calculate revenue by treatment zone from appointments data
