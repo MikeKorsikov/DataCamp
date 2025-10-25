@@ -18,30 +18,39 @@ import uuid
 from typing import Optional, Dict, List, Any
 import shutil
 
-# Initialize Flask application
+# =============================================================================
+# APPLICATION INITIALIZATION
+# =============================================================================
+
+# Initialize Flask application with static file serving from current directory
 app = Flask(__name__, static_folder='.', static_url_path='')
 
-# Configuration constants
+# =============================================================================
+# CONFIGURATION CONSTANTS
+# =============================================================================
+
+# Client data file configuration
 CSV_FILENAME = os.path.join(os.path.dirname(__file__), 'clients.csv')
 CSV_FIELDS = [
     'id', 'name', 'surname', 'phone', 'email', 'facebook', 'instagram', 'booksy', 'dob', 'created_at'
 ]
 
+# Appointment data file configuration
 APPOINTMENTS_CSV_FILENAME = os.path.join(os.path.dirname(__file__), 'appointments.csv')
 APPOINTMENTS_CSV_FIELDS = [
     'visit_id', 'client_id', 'procedure_number', 'appointment_datetime', 'area', 'power', 'confirmed', 'amount_pln', 'created_at'
 ]
 
-# Expense-related constants
+# Expense data file configuration
 EXPENSES_CSV_FILENAME = os.path.join(os.path.dirname(__file__), 'expenses.csv')
 EXPENSES_CSV_FIELDS = [
     'expense_id', 'expense_date', 'expense_amount', 'quantity', 'expense_category', 
     'tax_deductible', 'payment_method', 'expense_notes'
 ]
 
-# Backup directory
+# Backup directory configuration
 BACKUP_DIR = os.path.join(os.path.dirname(__file__), 'Backup')
-os.makedirs(BACKUP_DIR, exist_ok=True)
+os.makedirs(BACKUP_DIR, exist_ok=True)  # Create backup directory if it doesn't exist
 
 # HTTP status codes for better readability
 HTTP_OK = 200
@@ -190,8 +199,19 @@ def create_success_response(data: Dict[str, Any], status_code: int = HTTP_OK) ->
     return add_cors_headers(resp)
 
 
-def backup_csv_files():
-    """Create timestamped backup copies of CSV files."""
+def backup_csv_files() -> Dict[str, Any]:
+    """
+    Create timestamped backup copies of all CSV files.
+    
+    Creates backup files in the BACKUP_DIR with timestamp format: YYYYMMDD_HHMMSS.
+    Backs up both clients.csv and appointments.csv if they exist.
+    
+    Returns:
+        Dict[str, Any]: Dictionary containing:
+            - success (bool): Whether backup was successful
+            - message (str): Success or error message
+            - backups (dict): Paths to created backup files
+    """
     try:
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         backups = {}
@@ -224,7 +244,14 @@ def backup_csv_files():
 
 @app.route('/api/backup', methods=['POST'])
 def create_backup():
-    """Create a backup of all CSV files."""
+    """
+    API endpoint to create a backup of all CSV files.
+    
+    Creates timestamped backups of clients.csv and appointments.csv in the Backup directory.
+    
+    Returns:
+        JSON response with backup details or error message
+    """
     try:
         result = backup_csv_files()
         if result['success']:
@@ -328,7 +355,7 @@ def search_clients():
             return create_error_response('Field and term parameters are required', HTTP_BAD_REQUEST)
         
         if field not in CSV_FIELDS:
-            rcreate_error_response(f"Invalid field. Must be one of: {', '.join(CSV_FIELDS)}", HTTP_BAD_REQUEST)
+            return create_error_response(f"Invalid field. Must be one of: {', '.join(CSV_FIELDS)}", HTTP_BAD_REQUEST)
         
         results = []
         if os.path.exists(CSV_FILENAME):
