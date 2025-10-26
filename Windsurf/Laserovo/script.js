@@ -13,6 +13,7 @@
  * Last Updated: 2025-09-13
  */
 
+// Welcome message logged to console on script load
 console.log("Welcome to Laserovo!");
 
 // =============================================================================
@@ -20,19 +21,20 @@ console.log("Welcome to Laserovo!");
 // =============================================================================
 
 const CONFIG = {
-    API_BASE_URL: '', // Empty for same-origin requests
-    MODAL_ANIMATION_DURATION: 200,
-    DEBOUNCE_DELAY: 300,
+    API_BASE_URL: '', // Empty string for same-origin requests (backend on same domain)
+    MODAL_ANIMATION_DURATION: 200, // Milliseconds for modal open/close animations
+    DEBOUNCE_DELAY: 300, // Milliseconds to wait before executing debounced functions
     DATE_FORMAT_OPTIONS: { 
         year: 'numeric', 
         month: '2-digit', 
         day: '2-digit' 
-    },
+    }, // Date formatting options for toLocaleDateString (DD/MM/YYYY)
     TIME_FORMAT_OPTIONS: { 
         hour: '2-digit', 
         minute: '2-digit', 
         hour12: false 
-    },
+    }, // Time formatting options for toLocaleTimeString (24-hour format)
+    // Treatment areas with recommended number of procedures for completion
     AREAS: [
         { area_id: 1, area: 'face', recommended_procedures: 9 },
         { area_id: 2, area: 'underarms', recommended_procedures: 10 },
@@ -45,7 +47,7 @@ const CONFIG = {
         { area_id: 9, area: 'head', recommended_procedures: 10 },
         { area_id: 10, area: 'belly', recommended_procedures: 10 }
     ],
-    // Expense categories with their IDs and names
+    // Expense categories with their IDs, names, and descriptions for financial tracking
     EXPENSES: [
         { expense_id: 1, expense_category: 'Rent', description: 'Monthly rent payment' },
         { expense_id: 2, expense_category: 'Accounting services', description: 'Monthly accounting services' },
@@ -57,8 +59,9 @@ const CONFIG = {
         { expense_id: 8, expense_category: 'Panthenol', description: 'Panthenol' },
         { expense_id: 8, expense_category: 'Maintenance', description: 'Maintenance for lazer' }
     ],
-    // Minimum waiting periods between sessions (in weeks) for the same treatment zone
-    // Session 1 is initial; subsequent sessions require a minimum wait after the previous session
+    // Minimum waiting periods between laser treatment sessions (in weeks)
+    // Each session number maps to the minimum weeks required after the previous session
+    // Used to calculate "Next Visit" dates based on last completed procedure
     SESSION_WAIT: {
         1: { label: 'Initial session', min_weeks_after_previous: 0 },
         2: { min_weeks_after_previous: 4 },
@@ -78,7 +81,10 @@ const CONFIG = {
 // =============================================================================
 
 /**
- * Debounce function to limit API calls and improve performance
+ * Debounce function to limit API calls and improve performance.
+ * Delays function execution until after wait time has elapsed since last call.
+ * Useful for search inputs to avoid excessive API requests while user is typing.
+ * 
  * @param {Function} func - Function to debounce
  * @param {number} wait - Wait time in milliseconds
  * @returns {Function} Debounced function
@@ -96,7 +102,9 @@ function debounce(func, wait) {
 }
 
 /**
- * Display user-friendly error message with console logging
+ * Display user-friendly error message with console logging.
+ * Shows alert dialog to user and logs detailed error to console for debugging.
+ * 
  * @param {string} message - Error message to display
  * @param {Error} error - Original error object (optional)
  */
@@ -106,7 +114,9 @@ function showError(message, error = null) {
 }
 
 /**
- * Display success message with console logging
+ * Display success message with console logging.
+ * Shows alert dialog to user and logs success to console.
+ * 
  * @param {string} message - Success message to display
  */
 function showSuccess(message) {
@@ -115,10 +125,14 @@ function showSuccess(message) {
 }
 
 /**
- * Make API request with comprehensive error handling
- * @param {string} url - API endpoint
- * @param {Object} options - Fetch options
+ * Make API request with comprehensive error handling.
+ * Wraps fetch API with JSON headers and status checking.
+ * Throws error if response is not ok or status field is not 'ok'.
+ * 
+ * @param {string} url - API endpoint (relative or absolute URL)
+ * @param {Object} options - Fetch options (method, body, headers, etc.)
  * @returns {Promise<Object>} Parsed JSON response
+ * @throws {Error} If request fails or response indicates error
  */
 async function apiRequest(url, options = {}) {
     try {
@@ -132,6 +146,7 @@ async function apiRequest(url, options = {}) {
         
         const data = await response.json();
         
+        // Check both HTTP status and application-level status field
         if (!response.ok || data.status !== 'ok') {
             throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
         }
@@ -143,9 +158,12 @@ async function apiRequest(url, options = {}) {
 }
 
 /**
- * Format date and time from datetime string
- * @param {string} datetimeString - ISO datetime string
- * @returns {Object} Object with formatted date and time
+ * Format date and time from ISO datetime string.
+ * Converts ISO datetime to localized date and time strings.
+ * Returns 'N/A' for invalid or missing datetime values.
+ * 
+ * @param {string} datetimeString - ISO datetime string (e.g., '2025-01-15T14:30:00')
+ * @returns {Object} Object with formatted date and time { date: 'DD/MM/YYYY', time: 'HH:MM' }
  */
 function formatDateTime(datetimeString) {
     if (!datetimeString) {
@@ -164,20 +182,24 @@ function formatDateTime(datetimeString) {
 }
 
 /**
- * Check if current page matches the specified page name
- * @param {string} pageName - Name of the page to check
- * @returns {boolean} True if current page matches
+ * Check if current page matches the specified page name.
+ * Used to conditionally initialize page-specific functionality.
+ * 
+ * @param {string} pageName - Name of the page to check (e.g., 'clients.html')
+ * @returns {boolean} True if current page pathname includes the page name
  */
 function isCurrentPage(pageName) {
     return window.location.pathname.includes(pageName);
 }
 
 /**
- * Create HTML element with specified content and class
- * @param {string} tag - HTML tag name
- * @param {string} className - CSS class name
- * @param {string} innerHTML - HTML content
- * @returns {HTMLElement} Created element
+ * Create HTML element with specified content and class.
+ * Helper function to simplify dynamic element creation.
+ * 
+ * @param {string} tag - HTML tag name (e.g., 'div', 'button')
+ * @param {string} className - CSS class name to apply
+ * @param {string} innerHTML - HTML content to insert (default: empty string)
+ * @returns {HTMLElement} Created and configured element
  */
 function createElement(tag, className, innerHTML = '') {
     const element = document.createElement(tag);
@@ -191,17 +213,22 @@ function createElement(tag, className, innerHTML = '') {
 // =============================================================================
 
 /**
- * Centralized modal manager for consistent modal operations
+ * Centralized modal manager for consistent modal operations.
+ * Handles opening, closing, and backdrop clicks for all modals.
+ * Ensures only one modal is active at a time.
  */
 class ModalManager {
     constructor() {
-        this.activeModal = null;
+        this.activeModal = null; // Reference to currently open modal element
     }
     
     /**
-     * Open a modal by ID with optional focus management
-     * @param {string} modalId - ID of the modal element
-     * @param {string} focusElementId - ID of element to focus (optional)
+     * Open a modal by ID with optional focus management.
+     * Removes 'hidden' attribute to display modal.
+     * Optionally focuses a specific input field for better UX.
+     * 
+     * @param {string} modalId - ID of the modal element to open
+     * @param {string} focusElementId - ID of element to focus after opening (optional)
      */
     open(modalId, focusElementId = null) {
         const modal = document.getElementById(modalId);
@@ -211,34 +238,38 @@ class ModalManager {
         }
         
         this.activeModal = modal;
-        modal.removeAttribute('hidden');
+        modal.removeAttribute('hidden'); // Show modal by removing hidden attribute
         
-        // Focus management for accessibility
+        // Focus management for accessibility and better user experience
         if (focusElementId) {
             const focusElement = document.getElementById(focusElementId);
             if (focusElement) {
-                setTimeout(() => focusElement.focus(), 100);
+                setTimeout(() => focusElement.focus(), 100); // Delay to ensure modal is rendered
             }
         }
     }
     
     /**
-     * Close the currently active modal
+     * Close the currently active modal.
+     * Adds 'hidden' attribute to hide modal and clears active reference.
      */
     close() {
         if (this.activeModal) {
-            this.activeModal.setAttribute('hidden', '');
-            this.activeModal = null;
+            this.activeModal.setAttribute('hidden', ''); // Hide modal
+            this.activeModal = null; // Clear reference
         }
     }
     
     /**
-     * Handle backdrop click to close modal
-     * @param {Event} event - Click event
-     * @param {string} modalId - ID of the modal
+     * Handle backdrop click to close modal.
+     * Closes modal only if user clicks on the backdrop (not modal content).
+     * 
+     * @param {Event} event - Click event from modal overlay
+     * @param {string} modalId - ID of the modal to check
      */
     handleBackdropClick(event, modalId) {
         const modal = document.getElementById(modalId);
+        // Only close if click target is the modal overlay itself (not child elements)
         if (event.target === modal) {
             this.close();
         }
@@ -253,36 +284,51 @@ const modalManager = new ModalManager();
 // =============================================================================
 
 /**
- * Base class for all managers with common functionality
+ * Base class for all managers with common functionality.
+ * Provides reusable methods for form handling, modal setup, and item display.
+ * Extended by ClientManager and AppointmentManager.
  */
 class BaseManager {
     /**
-     * Get form data as object from form element
+     * Get form data as object from form element.
+     * Extracts all form field values and returns as key-value pairs.
+     * 
      * @param {string} formId - ID of the form element
-     * @returns {Object} Form data as key-value pairs
+     * @returns {Object} Form data as key-value pairs (field name: field value)
      */
     getFormData(formId) {
         const form = document.getElementById(formId);
         if (!form) return {};
         
         const formData = new FormData(form);
-        return Object.fromEntries(formData.entries());
+        return Object.fromEntries(formData.entries()); // Convert FormData to plain object
     }
     
     /**
-     * Reset and clear form
-     * @param {string} formId - ID of the form element
+     * Reset and clear form fields to their default values.
+     * 
+     * @param {string} formId - ID of the form element to reset
      */
     resetForm(formId) {
         const form = document.getElementById(formId);
         if (form) {
-            form.reset();
+            form.reset(); // Clear all form fields
         }
     }
     
     /**
-     * Setup modal event listeners with consistent behavior
-     * @param {Object} config - Configuration object
+     * Setup modal event listeners with consistent behavior.
+     * Configures open, close, backdrop click, and form submission handlers.
+     * 
+     * @param {Object} config - Configuration object with modal elements and callbacks
+     * @param {HTMLElement} config.button - Button that opens the modal
+     * @param {HTMLElement} config.modal - Modal overlay element
+     * @param {HTMLElement} config.cancelButton - Button that closes the modal
+     * @param {HTMLElement} config.form - Form element (optional)
+     * @param {string} config.focusElementId - ID of element to focus on open (optional)
+     * @param {Function} config.openCallback - Function to call when modal opens (optional)
+     * @param {Function} config.closeCallback - Function to call when modal closes (optional)
+     * @param {Function} config.submitCallback - Function to call on form submit (optional)
      */
     setupModalListeners(config) {
         const { 
@@ -292,50 +338,54 @@ class BaseManager {
         
         if (!button || !modal) return;
         
-        // Open modal
+        // Open modal button handler
         button.addEventListener('click', () => {
             modalManager.open(modal.id, config.focusElementId);
-            if (openCallback) openCallback();
+            if (openCallback) openCallback(); // Execute custom logic on open
         });
         
-        // Close modal
+        // Close modal button handler
         if (cancelButton) {
             cancelButton.addEventListener('click', () => {
                 modalManager.close();
-                if (closeCallback) closeCallback();
+                if (closeCallback) closeCallback(); // Execute custom logic on close
             });
         }
         
-        // Backdrop click
+        // Backdrop click handler (close when clicking outside modal content)
         modal.addEventListener('click', (e) => {
             modalManager.handleBackdropClick(e, modal.id);
         });
         
-        // Form submission
+        // Form submission handler
         if (form && submitCallback) {
             form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await submitCallback();
+                e.preventDefault(); // Prevent default form submission
+                await submitCallback(); // Execute custom submit logic
             });
         }
     }
     
     /**
-     * Display list items with consistent formatting
+     * Display list items with consistent formatting.
+     * Clears container and renders each item using provided callback.
+     * Shows "No items found" message if array is empty.
+     * 
      * @param {Array} items - Array of items to display
-     * @param {HTMLElement} container - Container element
-     * @param {Function} renderCallback - Function to render each item
+     * @param {HTMLElement} container - Container element to append items to
+     * @param {Function} renderCallback - Function that takes an item and returns HTMLElement
      */
     displayItems(items, container, renderCallback) {
         if (!container) return;
         
-        container.innerHTML = '';
+        container.innerHTML = ''; // Clear existing content
         
         if (items.length === 0) {
             container.innerHTML = '<p>No items found.</p>';
             return;
         }
         
+        // Render each item using the provided callback function
         items.forEach(item => {
             const element = renderCallback(item);
             if (element) {
@@ -350,27 +400,31 @@ class BaseManager {
 // =============================================================================
 
 /**
- * Manages all client-related operations
+ * Manages all client-related operations.
+ * Handles adding, searching, editing, viewing, and displaying client statistics.
+ * Extends BaseManager for common functionality.
  */
 class ClientManager extends BaseManager {
     constructor() {
         super();
-        this.currentClientId = null;
+        this.currentClientId = null; // Stores ID of client being edited
         this.initializeEventListeners();
     }
     
     /**
-     * Initialize all client management event listeners
+     * Initialize all client management event listeners.
+     * Sets up handlers for add, search, edit, and show all functionality.
      */
     initializeEventListeners() {
-        this.initializeAddClient();
-        this.initializeSearchClient();
-        this.initializeEditClient();
-        this.initializeShowAllClients();
+        this.initializeAddClient(); // Setup add new client modal
+        this.initializeSearchClient(); // Setup client search modal
+        this.initializeEditClient(); // Setup edit client modal
+        this.initializeShowAllClients(); // Setup show all clients modal (clients.html only)
     }
     
     /**
-     * Initialize add new client functionality
+     * Initialize add new client functionality.
+     * Sets up modal and form for creating new client records.
      */
     initializeAddClient() {
         const button = document.getElementById('add-new');
@@ -386,7 +440,8 @@ class ClientManager extends BaseManager {
     }
     
     /**
-     * Save new client to database
+     * Save new client to database via API.
+     * Validates required fields and sends POST request to create client.
      */
     async saveClient() {
         try {
@@ -406,7 +461,8 @@ class ClientManager extends BaseManager {
     }
     
     /**
-     * Initialize client search functionality
+     * Initialize client search functionality.
+     * Sets up modal and form for searching existing clients by various fields.
      */
     initializeSearchClient() {
         const button = document.getElementById('modify');
@@ -424,7 +480,8 @@ class ClientManager extends BaseManager {
     }
     
     /**
-     * Search for clients based on field and term
+     * Search for clients based on selected field and search term.
+     * Makes API request and displays matching results.
      */
     async searchClients() {
         try {
@@ -469,7 +526,8 @@ class ClientManager extends BaseManager {
     }
     
     /**
-     * Clear search results and hide container
+     * Clear search results and hide results container.
+     * Resets UI to initial state before search.
      */
     clearSearchResults() {
         const searchResults = document.getElementById('search-results');
@@ -480,7 +538,8 @@ class ClientManager extends BaseManager {
     }
     
     /**
-     * Close search modal and reset state
+     * Close search modal and reset all search state.
+     * Clears form, results, and hides modal.
      */
     closeSearchModal() {
         const searchModal = document.getElementById('search-modal-overlay');
@@ -493,7 +552,9 @@ class ClientManager extends BaseManager {
     }
     
     /**
-     * Initialize edit client functionality
+     * Initialize edit client functionality.
+     * Sets up modal, form, and event handlers for editing client information.
+     * Also handles stats button clicks to show client statistics.
      */
     initializeEditClient() {
         const modal = document.getElementById('edit-modal-overlay');
@@ -503,16 +564,16 @@ class ClientManager extends BaseManager {
         
         if (!modal || !form) return;
         
-        // Handle edit and stats button clicks from search results
+        // Handle edit and stats button clicks from search results using event delegation
         const resultsList = document.getElementById('results-list');
         if (resultsList) {
             resultsList.addEventListener('click', async (e) => {
                 if (e.target.classList.contains('edit-btn')) {
                     const clientId = e.target.getAttribute('data-client-id');
-                    this.openEditModal(clientId);
+                    this.openEditModal(clientId); // Open edit modal with client data
                 } else if (e.target.classList.contains('stats-btn')) {
                     const clientId = e.target.getAttribute('data-client-id');
-                    await this.showClientStats(clientId);
+                    await this.showClientStats(clientId); // Show client statistics modal
                 }
             });
         }
@@ -554,7 +615,9 @@ class ClientManager extends BaseManager {
     }
     
     /**
-     * Open edit modal and populate with client data
+     * Open edit modal and populate with client data.
+     * Fetches client details from API and fills form fields.
+     * 
      * @param {string} clientId - ID of client to edit
      */
     async openEditModal(clientId) {
@@ -562,12 +625,12 @@ class ClientManager extends BaseManager {
             const response = await apiRequest(`/clients/${clientId}`);
             const client = response.client;
             
-            // Populate form fields
+            // Populate form fields with client data
             const fields = ['name', 'surname', 'phone', 'email', 'facebook', 'instagram', 'booksy', 'dob'];
             fields.forEach(field => {
                 const element = document.getElementById(`edit-${field}`);
                 if (element) {
-                    element.value = client[field] || '';
+                    element.value = client[field] || ''; // Set value or empty string if null
                 }
             });
             
@@ -580,7 +643,8 @@ class ClientManager extends BaseManager {
     }
     
     /**
-     * Update client information
+     * Update client information via API.
+     * Sends PUT request with modified client data.
      */
     async updateClient() {
         try {
@@ -604,10 +668,12 @@ class ClientManager extends BaseManager {
     }
     
     /**
-     * Initialize show all clients functionality (clients.html only)
+     * Initialize show all clients functionality.
+     * Only runs on clients.html page to avoid unnecessary initialization.
+     * Sets up modal to display all clients in a sortable table.
      */
     initializeShowAllClients() {
-        if (!isCurrentPage('clients.html')) return;
+        if (!isCurrentPage('clients.html')) return; // Page-specific functionality
         
         const button = document.getElementById('show-all');
         const modal = document.getElementById('show-all-modal-overlay');
@@ -620,23 +686,24 @@ class ClientManager extends BaseManager {
             closeCallback: () => { if (list) list.innerHTML = ''; }
         });
         
-        // Handle edit and stats button clicks from show all modal
+        // Handle edit and stats button clicks from show all modal using event delegation
         if (list) {
             list.addEventListener('click', async (e) => {
                 if (e.target.classList.contains('edit-btn')) {
                     const clientId = e.target.getAttribute('data-client-id');
-                    this.openEditModal(clientId);
-                    modalManager.close();
+                    this.openEditModal(clientId); // Open edit modal
+                    modalManager.close(); // Close show all modal
                 } else if (e.target.classList.contains('stats-btn')) {
                     const clientId = e.target.getAttribute('data-client-id');
-                    await this.showClientStats(clientId);
+                    await this.showClientStats(clientId); // Show stats modal
                 }
             });
         }
     }
     
     /**
-     * Load and display all clients
+     * Load and display all clients in a table.
+     * Fetches all clients from API and renders them sorted by name.
      */
     async loadAllClients() {
         try {
@@ -652,7 +719,7 @@ class ClientManager extends BaseManager {
                 return;
             }
             
-            // Create table header
+            // Create table header row with column names
             const headerElement = createElement('div', 'show-all-clients-header', `
                 <div class="show-all-header-cell">Name</div>
                 <div class="show-all-header-cell">Surname</div>
@@ -667,13 +734,13 @@ class ClientManager extends BaseManager {
                 showAllList.appendChild(headerElement);
             }
             
-            // Sort clients by Name (A→Z), then Surname
+            // Sort clients alphabetically by Name (A→Z), then by Surname
             const sortedClients = [...response.results].sort((a, b) => {
                 const n = (a.name || '').localeCompare(b.name || '');
                 return n !== 0 ? n : (a.surname || '').localeCompare(b.surname || '');
             });
             
-            // Create client rows
+            // Create individual client rows with data and action buttons
             for (const client of sortedClients) {
                 const clientElement = createElement('div', 'show-all-clients-row', `
                     <div class="show-all-cell">${client.name || 'N/A'}</div>
@@ -700,51 +767,60 @@ class ClientManager extends BaseManager {
     }
     
     /**
-     * Show client statistics in a modal
-     * @param {string} clientId - ID of the client
+     * Show client statistics in a modal.
+     * Displays treatment progress, procedure counts, last visit dates, and next visit recommendations.
+     * Calculates progress percentages and overdue status for each treatment area.
+     * 
+     * @param {string} clientId - ID of the client to show statistics for
      */
     async showClientStats(clientId) {
         try {
-            // Get client details and stats in parallel
+            // Fetch client details and statistics in parallel for better performance
             const [clientResponse, statsResponse] = await Promise.all([
                 apiRequest(`/clients/${clientId}`),
                 apiRequest(`/clients/${clientId}/stats`)
             ]);
 
             const client = clientResponse.client;
-            const stats = statsResponse.stats || {};
-            const lastVisits = statsResponse.last_visits || {};
-            const lastProcedures = statsResponse.last_procedures || {};
+            const stats = statsResponse.stats || {}; // Visit counts per area
+            const lastVisits = statsResponse.last_visits || {}; // Last visit dates per area
+            const lastProcedures = statsResponse.last_procedures || {}; // Last procedure numbers per area
 
-            // Set client name in the modal
+            // Set client name in the modal header
             document.getElementById('client-stats-name').textContent = `${client.name} ${client.surname}`;
 
-            // Build areas with counts, last visit and next visit estimation
+            // Build treatment area data with visit counts, progress, and next visit calculations
             const treatmentAreas = CONFIG.AREAS.map(cfg => {
-                const key = cfg.area.toLowerCase();
-                const name = cfg.area.charAt(0).toUpperCase() + cfg.area.slice(1);
-                const visits = stats[key] || 0;
-                const lastRaw = lastVisits[key] || '';
-                let lastDisplay = '';
-                let nextDisplay = '';
-                let nextOverdue = false;
+                const key = cfg.area.toLowerCase(); // Normalize area name for lookup
+                const name = cfg.area.charAt(0).toUpperCase() + cfg.area.slice(1); // Capitalize for display
+                const visits = stats[key] || 0; // Total confirmed visits for this area
+                const lastRaw = lastVisits[key] || ''; // ISO date string of last visit
+                let lastDisplay = ''; // Formatted last visit date for display
+                let nextDisplay = ''; // Formatted next visit date for display
+                let nextOverdue = false; // Flag if next visit date has passed
+                // Calculate next visit date if client has had at least one visit
                 if (lastRaw) {
                     const dt = new Date(lastRaw);
                     if (!isNaN(dt.getTime())) {
                         lastDisplay = dt.toLocaleDateString('en-GB', CONFIG.DATE_FORMAT_OPTIONS);
-                        // Determine next session number and required wait (in weeks) based on last procedure number
+                        
+                        // Calculate next recommended visit date based on SESSION_WAIT configuration
                         const lastProcNum = lastProcedures[key] || 0;
-                        const nextSession = lastProcNum + 1;
+                        const nextSession = lastProcNum + 1; // Next procedure number
                         const waitCfg = CONFIG.SESSION_WAIT && CONFIG.SESSION_WAIT[nextSession];
                         const weeks = waitCfg && typeof waitCfg.min_weeks_after_previous === 'number' ? waitCfg.min_weeks_after_previous : null;
+                        
                         if (weeks !== null) {
+                            // Add waiting period to last visit date
                             const nextDt = new Date(dt);
                             nextDt.setDate(nextDt.getDate() + (weeks * 7));
+                            
                             if (!isNaN(nextDt.getTime())) {
                                 nextDisplay = nextDt.toLocaleDateString('en-GB', CONFIG.DATE_FORMAT_OPTIONS);
-                                // Mark overdue if next visit date is earlier than today
+                                
+                                // Check if next visit date has passed (mark as overdue)
                                 const today = new Date();
-                                // Compare by date only (ignore time) to avoid timezone surprises
+                                // Compare by date only (ignore time) to avoid timezone issues
                                 const nextDateOnly = new Date(nextDt.getFullYear(), nextDt.getMonth(), nextDt.getDate());
                                 const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
                                 nextOverdue = nextDateOnly < todayDateOnly;
@@ -752,13 +828,17 @@ class ClientManager extends BaseManager {
                         }
                     }
                 }
-                // Procedure # is the actual procedure_number of the latest confirmed, non-future visit for this area
-                const procedureNumber = lastProcedures[key] || '';
-                const recommendedProcedures = cfg.recommended_procedures || 0;
+                // Calculate treatment progress percentage
+                const procedureNumber = lastProcedures[key] || ''; // Latest procedure number
+                const recommendedProcedures = cfg.recommended_procedures || 0; // Total recommended procedures
+                
+                // Calculate percentage: (current procedure / recommended) * 100, clamped to 0-100
                 const pctNum = (procedureNumber && recommendedProcedures)
                     ? Math.round(Math.min(100, Math.max(0, (procedureNumber / recommendedProcedures) * 100)))
                     : null;
                 const progressPct = pctNum !== null ? `${pctNum}%` : '';
+                
+                // Determine progress level for color coding: low (<50%), mid (50-79%), high (80%+)
                 const progressLevel = pctNum === null ? '' : (pctNum < 50 ? 'level-low' : (pctNum < 80 ? 'level-mid' : 'level-high'));
                 return {
                     key,
@@ -774,13 +854,14 @@ class ClientManager extends BaseManager {
                 };
             });
 
-            // Sort areas alphabetically
+            // Sort treatment areas alphabetically by name for consistent display
             treatmentAreas.sort((a, b) => a.name.localeCompare(b.name));
 
-            // Populate treatment areas list
+            // Populate treatment areas list in the modal
             const treatmentList = document.getElementById('treatment-areas-list');
-            treatmentList.innerHTML = '';
+            treatmentList.innerHTML = ''; // Clear existing content
 
+            // Render each treatment area as a row with statistics
             treatmentAreas.forEach(area => {
                 const li = document.createElement('li');
                 li.className = 'stats-row';
@@ -798,7 +879,7 @@ class ClientManager extends BaseManager {
                 treatmentList.appendChild(li);
             });
 
-            // Show the modal
+            // Display the statistics modal
             document.getElementById('stats-modal-overlay').removeAttribute('hidden');
 
         } catch (error) {
@@ -812,28 +893,33 @@ class ClientManager extends BaseManager {
 // =============================================================================
 
 /**
- * Manages all appointment-related operations
+ * Manages all appointment-related operations.
+ * Handles creating, searching, editing, and viewing appointments.
+ * Includes client search within appointment creation and upcoming appointments tracking.
+ * Extends BaseManager for common functionality.
  */
 class AppointmentManager extends BaseManager {
     constructor() {
         super();
-        this.currentAppointmentId = null;
-        this.currentClientId = null;
+        this.currentAppointmentId = null; // Stores ID of appointment being edited
+        this.currentClientId = null; // Stores client ID associated with current appointment
         this.initializeEventListeners();
     }
     
     /**
-     * Initialize all appointment management event listeners
+     * Initialize all appointment management event listeners.
+     * Sets up handlers for creating, finding, viewing, and tracking appointments.
      */
     initializeEventListeners() {
-        this.initializeMakeAppointment();
-        this.initializeFindAppointment();
-        this.initializeShowAllAppointments();
-        this.initializeUpcomingAppointments();
+        this.initializeMakeAppointment(); // Setup appointment creation modal
+        this.initializeFindAppointment(); // Setup appointment search modal
+        this.initializeShowAllAppointments(); // Setup show all appointments modal (appointments.html only)
+        this.initializeUpcomingAppointments(); // Setup upcoming appointments tracking modal
     }
     
     /**
-     * Initialize make appointment functionality
+     * Initialize make appointment functionality.
+     * Sets up modal and form for creating new appointments with client search.
      */
     initializeMakeAppointment() {
         const button = document.getElementById('make-appointment');
@@ -853,7 +939,9 @@ class AppointmentManager extends BaseManager {
     }
     
     /**
-     * Initialize client search within appointment modal
+     * Initialize client search within appointment modal.
+     * Allows searching for existing clients when creating appointments.
+     * Supports search by name, surname, phone, or combined name/surname.
      */
     initializeClientSearch() {
         const searchBtn = document.getElementById('search-client-btn');
@@ -863,13 +951,13 @@ class AppointmentManager extends BaseManager {
         
         if (!searchBtn || !searchResults || !resultsList) return;
         
-        // Search button click
+        // Search button click handler
         searchBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             await this.searchClientForAppointment();
         });
         
-        // Client selection from results
+        // Client selection from search results using event delegation
         resultsList.addEventListener('click', (e) => {
             if (e.target.classList.contains('select-client-btn')) {
                 const clientId = e.target.getAttribute('data-client-id');
@@ -877,8 +965,9 @@ class AppointmentManager extends BaseManager {
             }
         });
         
-        // Enter key support and input clearing
+        // Enter key support for search and auto-clear results on input change
         if (searchTermField) {
+            // Allow Enter key to trigger search
             searchTermField.addEventListener('keypress', async (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -886,6 +975,7 @@ class AppointmentManager extends BaseManager {
                 }
             });
             
+            // Clear results when user starts typing new search term
             searchTermField.addEventListener('input', () => {
                 if (!searchResults.hasAttribute('hidden')) {
                     this.clearClientSearchResults();
@@ -895,7 +985,8 @@ class AppointmentManager extends BaseManager {
     }
     
     /**
-     * Search for clients within appointment modal
+     * Search for clients within appointment modal.
+     * Handles both single field search and combined name/surname search.
      */
     async searchClientForAppointment() {
         try {
@@ -909,10 +1000,11 @@ class AppointmentManager extends BaseManager {
             
             let allResults = [];
             
-            // Handle combined search (both name and surname)
+            // Handle combined search (searches both name and surname fields)
             if (searchField === 'both') {
                 allResults = await this.performCombinedClientSearch(searchTerm);
             } else {
+                // Single field search
                 const response = await apiRequest(`/clients/search?field=${encodeURIComponent(searchField)}&term=${encodeURIComponent(searchTerm)}`);
                 allResults = response.results;
             }
@@ -925,14 +1017,16 @@ class AppointmentManager extends BaseManager {
     }
     
     /**
-     * Perform combined search by name and surname
+     * Perform combined search by name and surname.
+     * Searches both fields and merges results, removing duplicates.
+     * 
      * @param {string} searchTerm - Term to search for
-     * @returns {Array} Combined unique results
+     * @returns {Array} Combined unique results from both name and surname searches
      */
     async performCombinedClientSearch(searchTerm) {
         let allResults = [];
         
-        // Search by name
+        // Search by name field
         try {
             const nameResponse = await apiRequest(`/clients/search?field=name&term=${encodeURIComponent(searchTerm)}`);
             allResults = [...nameResponse.results];
@@ -940,12 +1034,12 @@ class AppointmentManager extends BaseManager {
             console.warn('Name search failed:', error);
         }
         
-        // Search by surname and merge unique results
+        // Search by surname field and merge unique results (avoid duplicates)
         try {
             const surnameResponse = await apiRequest(`/clients/search?field=surname&term=${encodeURIComponent(searchTerm)}`);
-            const existingIds = new Set(allResults.map(client => client.id));
-            const newResults = surnameResponse.results.filter(client => !existingIds.has(client.id));
-            allResults = [...allResults, ...newResults];
+            const existingIds = new Set(allResults.map(client => client.id)); // Track already found IDs
+            const newResults = surnameResponse.results.filter(client => !existingIds.has(client.id)); // Filter out duplicates
+            allResults = [...allResults, ...newResults]; // Merge results
         } catch (error) {
             console.warn('Surname search failed:', error);
         }
@@ -1722,27 +1816,29 @@ class AppointmentManager extends BaseManager {
 // =============================================================================
 
 /**
- * Initialize application when DOM is fully loaded
+ * Initialize application when DOM is fully loaded.
+ * Creates manager instances and exposes them globally for debugging.
+ * This is the main entry point for the application.
  */
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Initializing Laserovo application...');
     
     try {
-        // Initialize managers
+        // Initialize manager instances for client and appointment operations
         const clientManager = new ClientManager();
         const appointmentManager = new AppointmentManager();
         
-        // Make managers globally available for debugging
+        // Expose managers and utilities globally for debugging and console access
         window.laserovo = {
-            clientManager,
-            appointmentManager,
-            modalManager,
-            utils: {
-                showError,
-                showSuccess,
-                apiRequest,
-                formatDateTime,
-                isCurrentPage
+            clientManager,           // Client management operations
+            appointmentManager,      // Appointment management operations
+            modalManager,            // Modal control
+            utils: {                 // Utility functions
+                showError,           // Error display
+                showSuccess,         // Success display
+                apiRequest,          // API communication
+                formatDateTime,      // Date/time formatting
+                isCurrentPage        // Page detection
             }
         };
         
