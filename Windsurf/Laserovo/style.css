@@ -182,7 +182,7 @@ body {
 
 .modal {
     width: 100%;
-    max-width: 800px;
+    max-width: 1200px;
     max-height: 90vh;
     background: #ffffff;
     border-radius: 12px;
@@ -190,6 +190,41 @@ body {
     overflow: hidden;
     display: flex;
     flex-direction: column;
+}
+
+#upcoming-appointments-table {
+    width: 100%;
+    table-layout: auto;
+}
+
+#upcoming-appointments-table th,
+#upcoming-appointments-table td {
+    padding: 12px 8px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
+}
+
+#upcoming-appointments-table th {
+    background-color: #f9fafb;
+    font-weight: 600;
+    color: #374151;
+}
+
+#upcoming-appointments-table tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+@media (max-width: 1280px) {
+    .modal {
+        max-width: 95%;
+    }
+    
+    #upcoming-appointments-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
 }
 
 .form-grid label {

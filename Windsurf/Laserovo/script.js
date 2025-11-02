@@ -1801,6 +1801,15 @@ class AppointmentManager extends BaseManager {
                     <td>
                         <button class="send-sms-btn" type="button">Send SMS</button>
                     </td>
+                    <td>
+                        <button class="send-email-btn" type="button">Send E-mail</button>
+                    </td>
+                    <td>
+                        <button class="send-msg-btn" type="button">Send msg</button>
+                    </td>
+                    <td>
+                        <button class="send-ig-btn" type="button">Send ig</button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             }
