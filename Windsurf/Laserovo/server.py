@@ -204,7 +204,7 @@ def backup_csv_files() -> Dict[str, Any]:
     Create timestamped backup copies of all CSV files.
     
     Creates backup files in the BACKUP_DIR with timestamp format: YYYYMMDD_HHMMSS.
-    Backs up both clients.csv and appointments.csv if they exist.
+    Backs up clients.csv, appointments.csv, and expenses.csv if they exist.
     
     Returns:
         Dict[str, Any]: Dictionary containing:
@@ -215,6 +215,9 @@ def backup_csv_files() -> Dict[str, Any]:
     try:
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         backups = {}
+        
+        # Ensure backup directory exists
+        os.makedirs(BACKUP_DIR, exist_ok=True)
         
         # Backup clients.csv
         if os.path.exists(CSV_FILENAME):
@@ -229,6 +232,13 @@ def backup_csv_files() -> Dict[str, Any]:
             backup_path = os.path.join(BACKUP_DIR, backup_filename)
             shutil.copy2(APPOINTMENTS_CSV_FILENAME, backup_path)
             backups['appointments'] = backup_path
+            
+        # Backup expenses.csv
+        if os.path.exists(EXPENSES_CSV_FILENAME):
+            backup_filename = f'expenses_backup_{timestamp}.csv'
+            backup_path = os.path.join(BACKUP_DIR, backup_filename)
+            shutil.copy2(EXPENSES_CSV_FILENAME, backup_path)
+            backups['expenses'] = backup_path
         
         return {
             'success': True,
