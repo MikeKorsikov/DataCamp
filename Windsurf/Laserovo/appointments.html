@@ -335,6 +335,8 @@
             // Initialize FullCalendar
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
+                timeZone: 'local',
+                firstDay: 1, // Start week on Monday
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
@@ -346,27 +348,47 @@
                     week: 'Week',
                     day: 'Day'
                 },
+                eventTimeFormat: {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false,
+                    meridiem: false
+                },
                 events: function(fetchInfo, successCallback, failureCallback) {
                     // Fetch appointments from the server
-                    fetch('/api/appointments')
-                        .then(response => response.json())
-                        .then(appointments => {
-                            // Transform appointments into FullCalendar event format
-                            const events = appointments.map(appointment => ({
-                                id: appointment.visit_id,
-                                title: `${appointment.name} ${appointment.surname} - ${appointment.area}`,
-                                start: appointment.appointment_datetime,
-                                extendedProps: {
-                                    area: appointment.area,
-                                    power: appointment.power,
-                                    confirmed: appointment.confirmed === 'yes',
-                                    amount: appointment.amount_pln
-                                },
-                                backgroundColor: appointment.confirmed === 'yes' ? '#28a745' : '#ffc107',
-                                borderColor: appointment.confirmed === 'yes' ? '#218838' : '#e0a800',
-                                textColor: '#fff'
-                            }));
-                            successCallback(events);
+                    console.log('Fetching appointments...');
+                    fetch('/appointments')
+                        .then(response => {
+                            console.log('Response status:', response.status);
+                            return response.json().then(data => {
+                                console.log('Response data:', data);
+                                return data;
+                            });
+                        })
+                        .then(data => {
+                            console.log('Processed data:', data);
+                            if (data.status === 'ok' && data.results) {
+                                // Transform appointments into FullCalendar event format
+                                const events = data.results.map(appointment => ({
+                                    id: appointment.visit_id,
+                                    title: `${appointment.client_name} - ${appointment.area}`,
+                                    start: appointment.appointment_datetime,
+                                    backgroundColor: appointment.confirmed === 'yes' ? '#28a745' : '#ffc107',
+                                    borderColor: appointment.confirmed === 'yes' ? '#218838' : '#e0a800',
+                                    textColor: '#fff',
+                                    extendedProps: {
+                                        clientName: appointment.client_name,
+                                        area: appointment.area,
+                                        power: appointment.power,
+                                        confirmed: appointment.confirmed === 'yes',
+                                        amount: appointment.amount_pln
+                                    }
+                                }));
+                                successCallback(events);
+                            } else {
+                                console.error('Unexpected response format:', data);
+                                successCallback([]);
+                            }
                         })
                         .catch(error => {
                             console.error('Error fetching appointments:', error);
@@ -376,15 +398,82 @@
                 eventClick: function(info) {
                     // Show appointment details when an event is clicked
                     const event = info.event;
-                    alert(
-                        `Appointment Details:\n` +
-                        `Client: ${event.title.split(' - ')[0]}\n` +
-                        `Area: ${event.extendedProps.area}\n` +
-                        `Date/Time: ${event.start.toLocaleString()}\n` +
-                        `Power: ${event.extendedProps.power || 'N/A'}\n` +
-                        `Status: ${event.extendedProps.confirmed ? 'Confirmed' : 'Not Confirmed'}\n` +
-                        `Amount: ${event.extendedProps.amount || 'N/A'} PLN`
-                    );
+                    const eventTime = new Date(event.start);
+                    const formattedTime = eventTime.toLocaleString('en-GB', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    });
+                    
+                    // Create a more detailed modal instead of an alert
+                    const modal = document.createElement('div');
+                    modal.style.position = 'fixed';
+                    modal.style.top = '50%';
+                    modal.style.left = '50%';
+                    modal.style.transform = 'translate(-50%, -50%)';
+                    modal.style.backgroundColor = 'white';
+                    modal.style.padding = '20px';
+                    modal.style.borderRadius = '8px';
+                    modal.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+                    modal.style.zIndex = '1000';
+                    modal.style.maxWidth = '400px';
+                    modal.style.width = '90%';
+                    
+                    modal.innerHTML = `
+                        <div style="margin-bottom: 15px;">
+                            <h3 style="margin-top: 0; color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                                ${event.extendedProps.clientName}
+                            </h3>
+                            <p><strong>Area:</strong> ${event.extendedProps.area}</p>
+                            <p><strong>When:</strong> ${formattedTime}</p>
+                            <p><strong>Power:</strong> ${event.extendedProps.power || 'N/A'}</p>
+                            <p><strong>Status:</strong> 
+                                <span style="color: ${event.extendedProps.confirmed ? 'green' : '#e67e22'};">
+                                    ${event.extendedProps.confirmed ? '✓ Confirmed' : '⚠ Not Confirmed'}
+                                </span>
+                            </p>
+                            ${event.extendedProps.amount ? `<p><strong>Amount:</strong> ${event.extendedProps.amount} PLN</p>` : ''}
+                        </div>
+                        <div style="text-align: right;">
+                            <button id="closeModalBtn" style="
+                                background: #4a90e2;
+                                color: white;
+                                border: none;
+                                padding: 8px 16px;
+                                border-radius: 4px;
+                                cursor: pointer;
+                            ">Close</button>
+                        </div>
+                    `;
+                    
+                    // Add overlay
+                    const overlay = document.createElement('div');
+                    overlay.style.position = 'fixed';
+                    overlay.style.top = '0';
+                    overlay.style.left = '0';
+                    overlay.style.right = '0';
+                    overlay.style.bottom = '0';
+                    overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
+                    overlay.style.zIndex = '999';
+                    
+                    // Close modal when clicking the overlay or close button
+                    const closeModal = () => {
+                        document.body.removeChild(overlay);
+                        document.body.removeChild(modal);
+                    };
+                    
+                    overlay.onclick = closeModal;
+                    
+                    // Append elements to body
+                    document.body.appendChild(overlay);
+                    document.body.appendChild(modal);
+                    
+                    // Add event listener to close button
+                    document.getElementById('closeModalBtn').onclick = closeModal;
+                    
                     info.jsEvent.preventDefault();
                 },
                 eventTimeFormat: {

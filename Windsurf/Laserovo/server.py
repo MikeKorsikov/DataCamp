@@ -633,20 +633,33 @@ def create_appointment():
 @app.route('/appointments', methods=['GET', 'OPTIONS'])
 def get_all_appointments():
     """
-    Get all appointments.
+    Get all appointments with client information.
     
     Returns:
-        JSON response with list of all appointments
+        JSON response with list of all appointments including client names and areas
     """
     if request.method == 'OPTIONS':
         return add_cors_headers(make_response('', HTTP_NO_CONTENT))
     
     try:
+        # Load all clients first
+        clients = {}
+        if os.path.exists(CSV_FILENAME):
+            with open(CSV_FILENAME, mode='r', newline='', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                clients = {row['id']: row for row in reader}
+        
+        # Load appointments and enrich with client data
         results = []
         if os.path.exists(APPOINTMENTS_CSV_FILENAME):
             with open(APPOINTMENTS_CSV_FILENAME, mode='r', newline='', encoding='utf-8') as f:
                 reader = csv.DictReader(f)
                 for row in reader:
+                    client_id = row.get('client_id')
+                    if client_id in clients:
+                        row['client_name'] = f"{clients[client_id].get('name', '')} {clients[client_id].get('surname', '')}".strip()
+                    else:
+                        row['client_name'] = 'Unknown Client'
                     results.append(row)
         
         return create_success_response({'results': results, 'count': len(results)})
