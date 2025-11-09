@@ -633,10 +633,18 @@ def create_appointment():
 @app.route('/appointments', methods=['GET', 'OPTIONS'])
 def get_all_appointments():
     """
-    Get all appointments with client information.
+    Get all appointments with client information in FullCalendar compatible format.
     
     Returns:
-        JSON response with list of all appointments including client names and areas
+        JSON response with list of all appointments in FullCalendar event format.
+        Each event includes:
+        - id: Unique identifier for the appointment
+        - title: Client name and treatment area
+        - start: Appointment datetime in ISO format
+        - backgroundColor: Green for confirmed, yellow for unconfirmed
+        - borderColor: Darker shade of the background color
+        - textColor: White text for better contrast
+        - extendedProps: Additional appointment details including client info and procedure details
     """
     if request.method == 'OPTIONS':
         return add_cors_headers(make_response('', HTTP_NO_CONTENT))
@@ -646,23 +654,36 @@ def get_all_appointments():
         clients = {}
         if os.path.exists(CSV_FILENAME):
             with open(CSV_FILENAME, mode='r', newline='', encoding='utf-8') as f:
-                reader = csv.DictReader(f)
-                clients = {row['id']: row for row in reader}
+                clients = {row['id']: row for row in csv.DictReader(f)}
         
-        # Load appointments and enrich with client data
-        results = []
+        # Load and process appointments
+        events = []
         if os.path.exists(APPOINTMENTS_CSV_FILENAME):
             with open(APPOINTMENTS_CSV_FILENAME, mode='r', newline='', encoding='utf-8') as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    client_id = row.get('client_id')
-                    if client_id in clients:
-                        row['client_name'] = f"{clients[client_id].get('name', '')} {clients[client_id].get('surname', '')}".strip()
-                    else:
-                        row['client_name'] = 'Unknown Client'
-                    results.append(row)
+                for row in csv.DictReader(f):
+                    client = clients.get(row.get('client_id', ''), {})
+                    client_name = f"{client.get('name', '')} {client.get('surname', '')}".strip() or 'Unknown Client'
+                    
+                    # Format the event for FullCalendar
+                    event = {
+                        'id': row.get('visit_id'),
+                        'title': f"{client_name} - {row.get('area', 'N/A')}",
+                        'start': row.get('appointment_datetime'),
+                        'backgroundColor': '#28a745' if row.get('confirmed') == 'yes' else '#ffc107',
+                        'borderColor': '#218838' if row.get('confirmed') == 'yes' else '#e0a800',
+                        'textColor': '#fff',
+                        'extendedProps': {
+                            'clientName': client_name,
+                            'area': row.get('area', 'N/A'),
+                            'power': row.get('power', 'N/A'),
+                            'confirmed': row.get('confirmed') == 'yes',
+                            'amount': row.get('amount_pln')
+                        }
+                    }
+                    events.append(event)
         
-        return create_success_response({'results': results, 'count': len(results)})
+        # Return the events directly for FullCalendar
+        return jsonify(events)
         
     except Exception as exc:
         return create_error_response(f'Failed to retrieve appointments: {str(exc)}', HTTP_INTERNAL_SERVER_ERROR)
