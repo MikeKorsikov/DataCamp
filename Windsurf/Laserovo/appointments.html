@@ -6,6 +6,36 @@
     <title>Laserovo - Appointments</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="style.css">
+    <!-- FullCalendar CSS -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+    <style>
+        /* Calendar Modal Styles */
+        #calendar-view-modal .modal {
+            max-width: 1000px;
+            width: 95%;
+        }
+        #calendar {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .fc-toolbar-title {
+            font-size: 1.5em;
+        }
+        .fc-button {
+            background: #4a90e2;
+            border: 1px solid #4a90e2;
+        }
+        .fc-button:hover {
+            background: #357abd;
+        }
+        .fc-button-active {
+            background: #2c3e50;
+        }
+    </style>
 </head>
 <body style="background: linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)), url('assets/appointments.png'); background-size: cover; background-position: center; background-attachment: fixed; background-repeat: no-repeat;">
     <main style="max-width:1000px;margin:40px auto;padding:20px;">
@@ -270,7 +300,130 @@
         </div>
     </div>
     
+    <!-- FullCalendar JS -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
     <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the calendar when the modal is shown
+            document.getElementById('calendar-view').addEventListener('click', function() {
+                document.getElementById('calendar-view-modal').removeAttribute('hidden');
+                initCalendar();
+            });
+
+            // Close modal when clicking the close button
+            document.querySelector('#calendar-view-modal .close-btn').addEventListener('click', function() {
+                document.getElementById('calendar-view-modal').setAttribute('hidden', 'true');
+            });
+
+            // Close modal when clicking outside the modal content
+            document.getElementById('calendar-view-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.setAttribute('hidden', 'true');
+                }
+            });
+        });
+
+        function initCalendar() {
+            const calendarEl = document.getElementById('calendar');
+            
+            // Check if calendar is already initialized
+            if (calendarEl._fullCalendar) {
+                calendarEl._fullCalendar.destroy();
+            }
+
+            // Initialize FullCalendar
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                buttonText: {
+                    today: 'Today',
+                    month: 'Month',
+                    week: 'Week',
+                    day: 'Day'
+                },
+                events: function(fetchInfo, successCallback, failureCallback) {
+                    // Fetch appointments from the server
+                    fetch('/api/appointments')
+                        .then(response => response.json())
+                        .then(appointments => {
+                            // Transform appointments into FullCalendar event format
+                            const events = appointments.map(appointment => ({
+                                id: appointment.visit_id,
+                                title: `${appointment.name} ${appointment.surname} - ${appointment.area}`,
+                                start: appointment.appointment_datetime,
+                                extendedProps: {
+                                    area: appointment.area,
+                                    power: appointment.power,
+                                    confirmed: appointment.confirmed === 'yes',
+                                    amount: appointment.amount_pln
+                                },
+                                backgroundColor: appointment.confirmed === 'yes' ? '#28a745' : '#ffc107',
+                                borderColor: appointment.confirmed === 'yes' ? '#218838' : '#e0a800',
+                                textColor: '#fff'
+                            }));
+                            successCallback(events);
+                        })
+                        .catch(error => {
+                            console.error('Error fetching appointments:', error);
+                            failureCallback(error);
+                        });
+                },
+                eventClick: function(info) {
+                    // Show appointment details when an event is clicked
+                    const event = info.event;
+                    alert(
+                        `Appointment Details:\n` +
+                        `Client: ${event.title.split(' - ')[0]}\n` +
+                        `Area: ${event.extendedProps.area}\n` +
+                        `Date/Time: ${event.start.toLocaleString()}\n` +
+                        `Power: ${event.extendedProps.power || 'N/A'}\n` +
+                        `Status: ${event.extendedProps.confirmed ? 'Confirmed' : 'Not Confirmed'}\n` +
+                        `Amount: ${event.extendedProps.amount || 'N/A'} PLN`
+                    );
+                    info.jsEvent.preventDefault();
+                },
+                eventTimeFormat: {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                },
+                height: 'auto',
+                navLinks: true,
+                nowIndicator: true,
+                dayMaxEvents: true,
+                firstDay: 1 // Start week on Monday
+            });
+
+            // Store calendar instance for later reference
+            calendarEl._fullCalendar = calendar;
+            
+            // Render the calendar
+            calendar.render();
+        }
+    </script>
+</body>
+
+    <!-- Calendar View Modal -->
+    <div class="modal-overlay" id="calendar-view-modal" hidden>
+        <div class="modal" style="max-width: 1000px;">
+            <div class="modal-header">
+                <h2>Appointment Calendar</h2>
+                <button class="close-btn" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="calendar"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="document.getElementById('calendar-view-modal').setAttribute('hidden', 'true')">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Function to populate area dropdowns from CONFIG.AREAS
         function populateAreaDropdowns() {
