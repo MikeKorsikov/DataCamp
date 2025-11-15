@@ -554,6 +554,35 @@ def get_all_clients():
         return create_error_response(f'Failed to retrieve clients: {str(exc)}', HTTP_INTERNAL_SERVER_ERROR)
 
 
+def has_existing_appointment(appointment_datetime: str) -> bool:
+    """
+    Check if there's an existing appointment at the same date and time.
+    
+    Args:
+        appointment_datetime (str): ISO format datetime to check
+        
+    Returns:
+        bool: True if an appointment exists at the same time, False otherwise
+    """
+    if not os.path.exists(APPOINTMENTS_CSV_FILENAME):
+        return False
+    
+    try:
+        target_time = datetime.fromisoformat(appointment_datetime).replace(second=0, microsecond=0)
+        
+        with open(APPOINTMENTS_CSV_FILENAME, mode='r', newline='', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                try:
+                    row_time = datetime.fromisoformat(row['appointment_datetime']).replace(second=0, microsecond=0)
+                    if row_time == target_time:
+                        return True
+                except (ValueError, KeyError):
+                    continue
+        return False
+    except Exception:
+        return False
+
 @app.route('/appointments', methods=['POST', 'OPTIONS'])
 def create_appointment():
     """
@@ -584,6 +613,10 @@ def create_appointment():
         
         if not all([name, surname, appointment_datetime, area]):
             return create_error_response('Name, surname, appointment datetime, and area are required', HTTP_BAD_REQUEST)
+        
+        # Check for existing appointment at the same time
+        if has_existing_appointment(appointment_datetime):
+            return create_error_response('Time slot is not available! Please choose a different time.', HTTP_BAD_REQUEST)
         
         # Find client ID
         client_id = get_client_id_by_name(name, surname)
