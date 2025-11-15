@@ -110,7 +110,7 @@ function debounce(func, wait) {
  */
 function showError(message, error = null) {
     console.error('Error:', message, error);
-    alert(`Error: ${message}`);
+    alert(message);
 }
 
 /**
@@ -147,13 +147,20 @@ async function apiRequest(url, options = {}) {
         const data = await response.json();
         
         // Check both HTTP status and application-level status field
-        if (!response.ok || data.status !== 'ok') {
-            throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
+        if (!response.ok || data.status === 'error') {
+            const error = new Error(data.message || 'API request failed');
+            error.response = response;
+            error.data = data;
+            // If it's a time slot error, use the message as is
+            if (data.message && data.message.includes('Time slot is not available')) {
+                throw new Error(data.message);
+            }
+            throw error;
         }
         
         return data;
     } catch (error) {
-        throw new Error(`API request failed: ${error.message}`);
+        throw new Error(error.message);
     }
 }
 
@@ -1109,43 +1116,6 @@ class AppointmentManager extends BaseManager {
     }
     
     /**
-     * Check if there's an existing appointment at the same date and time
-     * @param {string} datetime - ISO datetime string to check
-     * @returns {Promise<boolean>} True if appointment exists, false otherwise
-     */
-    async hasExistingAppointment(datetime) {
-        try {
-            // Convert to ISO string and extract just the date part for the API query
-            const date = new Date(datetime);
-            const dateStr = date.toISOString().split('T')[0];
-            
-            // Get all appointments for the same date
-            const response = await apiRequest(`/appointments?date=${dateStr}`);
-            
-            if (!response.appointments || !response.appointments.length) {
-                return false;
-            }
-            
-            // Check if any existing appointment is at the exact same time
-            // or within the appointment duration window
-            const newAppointmentTime = new Date(datetime).getTime();
-            const APPOINTMENT_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
-            
-            return response.appointments.some(appt => {
-                const apptTime = new Date(appt.appointment_datetime).getTime();
-                // Check for exact match or any overlap within the appointment duration
-                return newAppointmentTime === apptTime || 
-                       (Math.abs(newAppointmentTime - apptTime) < APPOINTMENT_DURATION);
-            });
-            
-        } catch (error) {
-            console.error('Error checking for existing appointments:', error);
-            // If there's an error checking, we'll let the save proceed to avoid false negatives
-            return false;
-        }
-    }
-    
-    /**
      * Save new appointment to database
      */
     async saveAppointment() {
@@ -1153,19 +1123,12 @@ class AppointmentManager extends BaseManager {
             const data = this.getFormData('appointment-form');
             
             // Combine date and time into datetime field
-            let appointmentDatetime = '';
             if (data.appointment_date && data.appointment_time) {
-                appointmentDatetime = `${data.appointment_date}T${data.appointment_time}`;
-                data.appointment_datetime = appointmentDatetime;
+                data.appointment_datetime = `${data.appointment_date}T${data.appointment_time}`;
                 delete data.appointment_date;
                 delete data.appointment_time;
-                
-                // Check for existing appointments at the same time
-                const hasConflict = await this.hasExistingAppointment(appointmentDatetime);
-                if (hasConflict) {
-                    showError('Time slot is not available! Please choose a different time.');
-                    return;
-                }
+            } else {
+                throw new Error('Appointment date and time are required');
             }
             
             const response = await apiRequest('/appointments', {
@@ -1178,7 +1141,7 @@ class AppointmentManager extends BaseManager {
             showSuccess(response.message || `Appointment saved successfully! Procedure #${response.procedure_number}`);
             
         } catch (error) {
-            showError('Failed to save appointment. ' + (error.message || 'Please ensure the backend is running.'));
+            showError(error.message || 'Failed to save appointment. Please try again.');
         }
     }
     
