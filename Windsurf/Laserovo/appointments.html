@@ -29,6 +29,13 @@
             background: #4a90e2;
             border: 1px solid #4a90e2;
         }
+        /* Ensure modals stack properly */
+        .modal-overlay {
+            z-index: 1000;
+        }
+        #calendar-view-modal {
+            z-index: 1001;
+        }
         .fc-button:hover {
             background: #357abd;
         }
@@ -341,6 +348,27 @@
                     left: 'prev,next today',
                     center: 'title',
                     right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                dateClick: function(info) {
+                    // Close the calendar modal first
+                    const calendarModal = document.getElementById('calendar-view-modal');
+                    calendarModal.hidden = true;
+                    document.body.style.overflow = '';
+                    
+                    // Open the appointment modal using the modal manager
+                    modalManager.open('appointment-modal-overlay', 'client-search-term');
+                    
+                    // Set the date and time in the form
+                    const clickedDate = info.date;
+                    const dateStr = clickedDate.toISOString().slice(0, 10);
+                    const timeStr = clickedDate.toTimeString().slice(0, 5);
+                    
+                    // Set the date and time in the form
+                    document.getElementById('appointment-date').value = dateStr;
+                    document.getElementById('appointment-time').value = timeStr;
+                    
+                    // Prevent default behavior
+                    info.jsEvent.preventDefault();
                 },
                 buttonText: {
                     today: 'Today',

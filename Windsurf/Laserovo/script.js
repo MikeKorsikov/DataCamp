@@ -1136,9 +1136,16 @@ class AppointmentManager extends BaseManager {
                 body: JSON.stringify(data)
             });
             
+            // Close the modal and reset the form
             modalManager.close();
             this.resetForm('appointment-form');
             showSuccess(response.message || `Appointment saved successfully! Procedure #${response.procedure_number}`);
+            
+            // Refresh the calendar if it's open
+            const calendarEl = document.getElementById('calendar');
+            if (calendarEl && calendarEl._fullCalendar) {
+                calendarEl._fullCalendar.refetchEvents();
+            }
             
         } catch (error) {
             showError(error.message || 'Failed to save appointment. Please try again.');
