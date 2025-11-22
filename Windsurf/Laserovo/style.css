@@ -1594,14 +1594,15 @@ label small {
 }
 
 /* Client Statistics Modal */
-#stats-modal-overlay .modal {
-    max-width: 95vw;
-    width: 1200px;
+#show-all-modal-overlay .modal {
+    width: 95%;
+    max-width: 1200px;
     max-height: 90vh;
     display: flex;
     flex-direction: column;
 }
 
+#show-all-modal-overlay .modal-body {
 #stats-modal-overlay .modal-body {
     flex: 1;
     display: flex;
