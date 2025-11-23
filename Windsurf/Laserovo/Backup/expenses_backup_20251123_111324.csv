@@ -1,0 +1,4 @@
+expense_unique_id               , expense_date, expense_amount, quantity, expense_category   , tax_deductible, payment_method, expense_notes
+0e98368b69414448a40605eb8e1e8251, 2025-01-01  ,         100.00,        1, Rent               , yes           , bank transfer , Advance for Feb rent
+0e98368b69414448a40605eb8e1e8250, 2025-10-10  ,         100.50,        1, Accounting services, no            , cash          , for October
+f8f797b614ed41e5b005c1b748c39e20, 2025-09-01  ,         250.00,        3, Ultrasound gel     , no            , cash          , 

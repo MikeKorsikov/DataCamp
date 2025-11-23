@@ -958,17 +958,23 @@ class AppointmentManager extends BaseManager {
         
         if (!searchBtn || !searchResults || !resultsList) return;
         
+        // Set the search button type to button to prevent form submission
+        searchBtn.type = 'button';
+        
         // Search button click handler
         searchBtn.addEventListener('click', async (e) => {
             e.preventDefault();
+            e.stopPropagation();
             await this.searchClientForAppointment();
         });
         
         // Client selection from search results using event delegation
-        resultsList.addEventListener('click', (e) => {
+        resultsList.addEventListener('click', async (e) => {
             if (e.target.classList.contains('select-client-btn')) {
+                e.preventDefault();
+                e.stopPropagation();
                 const clientId = e.target.getAttribute('data-client-id');
-                this.selectClientForAppointment(clientId);
+                await this.selectClientForAppointment(clientId);
             }
         });
         
@@ -1086,6 +1092,9 @@ class AppointmentManager extends BaseManager {
             const response = await apiRequest(`/clients/${clientId}`);
             const client = response.client;
             
+            // Store the client ID
+            this.currentClientId = clientId;
+            
             // Populate name and surname fields
             const nameField = document.getElementById('appointment-name');
             const surnameField = document.getElementById('appointment-surname');
@@ -1099,8 +1108,11 @@ class AppointmentManager extends BaseManager {
             const dateField = document.getElementById('appointment-date');
             if (dateField) dateField.focus();
             
+            return true;
+            
         } catch (error) {
             showError('Failed to load client data.', error);
+            return false;
         }
     }
     
