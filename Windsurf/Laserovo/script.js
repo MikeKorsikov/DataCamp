@@ -1876,26 +1876,27 @@ function showGreetingModal() {
         greetingElement.textContent = `${greeting} Valeria!`;
     }
     
-    // Show the modal
-    const modalOverlay = document.getElementById('greeting-modal-overlay');
-    if (modalOverlay) {
-        modalOverlay.classList.add('visible');
-    }
+    // Use the modalManager to handle the modal
+    modalManager.open('greeting-modal-overlay');
     
     // Add click handler for the close button
     const closeButton = document.getElementById('close-greeting');
     if (closeButton) {
-        closeButton.addEventListener('click', () => {
-            modalOverlay.classList.remove('visible');
-        });
+        closeButton.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            modalManager.close();
+            return false;
+        };
     }
     
-    // Close modal when clicking outside the modal content
-    modalOverlay.addEventListener('click', (e) => {
-        if (e.target === modalOverlay) {
-            modalOverlay.classList.remove('visible');
-        }
-    });
+    // Handle click on modal overlay
+    const modalOverlay = document.getElementById('greeting-modal-overlay');
+    if (modalOverlay) {
+        modalOverlay.onclick = (e) => {
+            modalManager.handleBackdropClick(e, 'greeting-modal-overlay');
+        };
+    }
 }
 
 // =============================================================================
