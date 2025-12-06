@@ -1849,57 +1849,6 @@ class AppointmentManager extends BaseManager {
 }
 
 // =============================================================================
-// GREETING MODAL
-// =============================================================================
-
-/**
- * Shows a greeting modal with a time-appropriate message.
- * The greeting changes based on the time of day.
- */
-function showGreetingModal() {
-    // Get current hour (0-23)
-    const hour = new Date().getHours();
-    
-    // Determine time of day and set appropriate greeting
-    let greeting;
-    if (hour < 12) {
-        greeting = 'Good morning';
-    } else if (hour < 18) {
-        greeting = 'Good afternoon';
-    } else {
-        greeting = 'Good evening';
-    }
-    
-    // Update the greeting message
-    const greetingElement = document.getElementById('greeting-message');
-    if (greetingElement) {
-        greetingElement.textContent = `${greeting} Valeria!`;
-    }
-    
-    // Use the modalManager to handle the modal
-    modalManager.open('greeting-modal-overlay');
-    
-    // Add click handler for the close button
-    const closeButton = document.getElementById('close-greeting');
-    if (closeButton) {
-        closeButton.onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            modalManager.close();
-            return false;
-        };
-    }
-    
-    // Handle click on modal overlay
-    const modalOverlay = document.getElementById('greeting-modal-overlay');
-    if (modalOverlay) {
-        modalOverlay.onclick = (e) => {
-            modalManager.handleBackdropClick(e, 'greeting-modal-overlay');
-        };
-    }
-}
-
-// =============================================================================
 // APPLICATION INITIALIZATION
 // =============================================================================
 
@@ -1931,9 +1880,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         
         console.log('Laserovo application initialized successfully!');
-        
-        // Show greeting modal after a short delay
-        setTimeout(showGreetingModal, 500);
         
     } catch (error) {
         console.error('Failed to initialize Laserovo application:', error);
